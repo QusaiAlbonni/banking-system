@@ -1,0 +1,193 @@
+{
+  "en": [
+    {
+      "word": "ass",
+      "regex": "\\b[a4@]+[^a-zA-Z0-9]*[s5$]+[^a-zA-Z0-9]*[s5$]+\\b"
+    },
+    {
+      "word": "dickhead",
+      "regex": "\\b[d]+[^a-zA-Z0-9]*[i1!]+[^a-zA-Z0-9]*[c]+[^a-zA-Z0-9]*[k]+[^a-zA-Z0-9]*[h]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[a4@]+[^a-zA-Z0-9]*[d]+\\b"
+    },
+    {
+      "word": "dick",
+      "regex": "\\b[d]+[^a-zA-Z0-9]*[i1!]+[^a-zA-Z0-9]*[c]+[^a-zA-Z0-9]*[k]+\\b"
+    },
+    {
+      "word": "zb",
+      "regex": "\\b[z2]+[^a-zA-Z0-9]*[b8]+\\b"
+    },
+    {
+      "word": "bitch",
+      "regex": "\\b[b8]+[^a-zA-Z0-9]*[i1!]+[^a-zA-Z0-9]*[t7]+[^a-zA-Z0-9]*[c]+[^a-zA-Z0-9]*[h]+\\b"
+    },
+    {
+      "word": "fuck",
+      "regex": "\\b[f]+[^a-zA-Z0-9]*[u]+[^a-zA-Z0-9]*[c]+[^a-zA-Z0-9]*[k]+\\b"
+    },
+    {
+      "word": "shit",
+      "regex": "\\b[s5$]+[^a-zA-Z0-9]*[h]+[^a-zA-Z0-9]*[i1!]+[^a-zA-Z0-9]*[t7]+\\b"
+    },
+    {
+      "word": "cunt",
+      "regex": "\\b[c]+[^a-zA-Z0-9]*[u]+[^a-zA-Z0-9]*[n]+[^a-zA-Z0-9]*[t7]+\\b"
+    },
+    {
+      "word": "pussy",
+      "regex": "\\b[p]+[^a-zA-Z0-9]*[u]+[^a-zA-Z0-9]*[s5$]+[^a-zA-Z0-9]*[s5$]+[^a-zA-Z0-9]*[y]+\\b"
+    },
+    {
+      "word": "whore",
+      "regex": "\\b[w]+[^a-zA-Z0-9]*[h]+[^a-zA-Z0-9]*[o0]+[^a-zA-Z0-9]*[r]+[^a-zA-Z0-9]*[e3]+\\b"
+    },
+    {
+      "word": "slut",
+      "regex": "\\b[s5$]+[^a-zA-Z0-9]*[l1]+[^a-zA-Z0-9]*[u]+[^a-zA-Z0-9]*[t7]+\\b"
+    },
+    {
+      "word": "nigger",
+      "regex": "\\b[n]+[^a-zA-Z0-9]*[i1!]+[^a-zA-Z0-9]*[g9]+[^a-zA-Z0-9]*[g9]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[r]+\\b"
+    },
+    {
+      "word": "retard",
+      "regex": "\\b[r]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[t7]+[^a-zA-Z0-9]*[a4@]+[^a-zA-Z0-9]*[r]+[^a-zA-Z0-9]*[d]+\\b"
+    },
+    {
+      "word": "bastard",
+      "regex": "\\b[b8]+[^a-zA-Z0-9]*[a4@]+[^a-zA-Z0-9]*[s5$]+[^a-zA-Z0-9]*[t7]+[^a-zA-Z0-9]*[a4@]+[^a-zA-Z0-9]*[r]+[^a-zA-Z0-9]*[d]+\\b"
+    },
+    {
+      "word": "motherfucker",
+      "regex": "\\b[m]+[^a-zA-Z0-9]*[o0]+[^a-zA-Z0-9]*[t7]+[^a-zA-Z0-9]*[h]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[r]+[^a-zA-Z0-9]*[f]+[^a-zA-Z0-9]*[u]+[^a-zA-Z0-9]*[c]+[^a-zA-Z0-9]*[k]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[r]+\\b"
+    },
+    {
+      "word": "pedo",
+      "regex": "\\b[p]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[d]+[^a-zA-Z0-9]*[o0]+\\b"
+    },
+    {
+      "word": "rapist",
+      "regex": "\\b[r]+[^a-zA-Z0-9]*[a4@]+[^a-zA-Z0-9]*[p]+[^a-zA-Z0-9]*[i1!]+[^a-zA-Z0-9]*[s5$]+[^a-zA-Z0-9]*[t7]+\\b"
+    },
+    {
+      "word": "nigga",
+      "regex": "\\b[n]+[^a-zA-Z0-9]*[i1!]+[^a-zA-Z0-9]*[g9]+[^a-zA-Z0-9]*[g9]+[^a-zA-Z0-9]*[a4@]+\\b"
+    },
+    {
+      "word": "fag",
+      "regex": "\\b[f]+[^a-zA-Z0-9]*[a4@]+[^a-zA-Z0-9]*[g9]+\\b"
+    },
+    {
+      "word": "queer",
+      "regex": "\\b[q9]+[^a-zA-Z0-9]*[u]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[r]+\\b"
+    },
+    {
+      "word": "tranny",
+      "regex": "\\b[t7]+[^a-zA-Z0-9]*[r]+[^a-zA-Z0-9]*[a4@]+[^a-zA-Z0-9]*[n]+[^a-zA-Z0-9]*[n]+[^a-zA-Z0-9]*[y]+\\b"
+    },
+    {
+      "word": "incest",
+      "regex": "\\b[i1!]+[^a-zA-Z0-9]*[n]+[^a-zA-Z0-9]*[c]+[^a-zA-Z0-9]*[e3]+[^a-zA-Z0-9]*[s5$]+[^a-zA-Z0-9]*[t7]+\\b"
+    },
+    {
+      "word": "scrotum",
+      "regex": "\\b[s5$]+[^a-zA-Z0-9]*[c]+[^a-zA-Z0-9]*[r]+[^a-zA-Z0-9]*[o0]+[^a-zA-Z0-9]*[t7]+[^a-zA-Z0-9]*[u]+[^a-zA-Z0-9]*[m]+\\b"
+    }
+  ],
+  "ar": [
+    {
+      "word": "كس",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ك[^أ-ي0-9]*س(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "قحبة",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ق[^أ-ي0-9]*ح[^أ-ي0-9]*ب[^أ-ي0-9]*ة(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "قواد",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ق[^أ-ي0-9]*و[^أ-ي0-9]*ا[^أ-ي0-9]*د(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "خنيث",
+      "regex": "(?<!\\p{Letter}|\\p{Number})خ[^أ-ي0-9]*ن[^أ-ي0-9]*ي[^أ-ي0-9]*ث(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "شرموط",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ش[^أ-ي0-9]*ر[^أ-ي0-9]*م[^أ-ي0-9]*و[^أ-ي0-9]*ط(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "نيك",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ن[^أ-ي0-9]*ي[^أ-ي0-9]*ك(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "خرا",
+      "regex": "(?<!\\p{Letter}|\\p{Number})خ[^أ-ي0-9]*ر[^أ-ي0-9]*ا(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "خول",
+      "regex": "(?<!\\p{Letter}|\\p{Number})خ[^أ-ي0-9]*و[^أ-ي0-9]*ل(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "ممحون",
+      "regex": "(?<!\\p{Letter}|\\p{Number})م[^أ-ي0-9]*م[^أ-ي0-9]*ح[^أ-ي0-9]*و[^أ-ي0-9]*ن(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "زق",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ز[^أ-ي0-9]*ق(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "كلب",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ك[^أ-ي0-9]*ل[^أ-ي0-9]*ب(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "يلعن",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ي[^أ-ي0-9]*ل[^أ-ي0-9]*ع[^أ-ي0-9]*ن(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "طز",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ط[^أ-ي0-9]*ز(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "طيز",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ط[^أ-ي0-9]*ي[^أ-ي0-9]*ز(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "زب",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ز[^أ-ي0-9]*ب(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "اير",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ا[^أ-ي0-9]*ي[^أ-ي0-9]*ر(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "عرص",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ع[^أ-ي0-9]*ر[^أ-ي0-9]*ص(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "لواط",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ل[^أ-ي0-9]*و[^أ-ي0-9]*ا[^أ-ي0-9]*ط(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    },
+    {
+      "word": "عاهرة",
+      "regex": "(?<!\\p{Letter}|\\p{Number})ع[^أ-ي0-9]*ا[^أ-ي0-9]*ه[^أ-ي0-9]*ر[^أ-ي0-9]*ة(?:[^أ-ي0-9]*[أ-ي]+)*(?!\\p{Letter}|\\p{Number})",
+      "flags": "giu"
+    }
+  ]
+}

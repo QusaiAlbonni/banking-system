@@ -1,0 +1,47 @@
+{
+  "USER_NOT_FOUND": "المستخدم غير موجود",
+  "DUPLICATE_VALUE": "قيمة مكررة (قيد فريد).",
+  "ONLY_DRIVER_CAN_UPDATE": "فقط السائقون/التوصيل يمكنهم تحديث ملف السائق",
+  "CANNOT_UPDATE_WHILE_ACTIVE": "لا يمكن تحديث الملف أثناء التفعيل أو أثناء الرحلة",
+  "DRIVER_PROFILE_EXISTS": "ملف السائق موجود بالفعل",
+  "DRIVER_PROFILE_MISSING": "ملف السائق مفقود",
+  "VEHICLE_TYPE_MISSING": "نوع مركبة السائق مفقود",
+  "ROLE_VEHICLETYPE_CONFLICT": "يجب أن يتطابق دور السائق مع نوع المركبة",
+  "MUST_PROVIDE_FILES": "يجب أن تكون الملفات على الأقل عنصراً واحداً",
+
+
+
+
+
+  "FORBIDDEN_UPDATE_PRODUCT_IMAGE": "غير مصرح لك بتحديث صور هذا المنتج",
+  "ALREADY_REVIEWED": "لقد قمت بمراجعة هذا المنتج مسبقًا",
+  "REVIEW_NOT_FOUND": "المراجعة غير موجودة",
+  "INAPROPRIATE_CONTENT": "الصور التي تم ارفاقها لا تتناسب مع معايير منصتنا",
+  "AD_NOT_FOUND": "الاعلان غير موجود",
+  "ALREADY_EXIST_CATEGORY": "موجود مسبقًا",
+  "CREATED_SUCCESSFULLY": "تم الانشاء بنجاح",
+  "CUSTOMER_CANT_BELONG_TO_SECTION": "لا يمكن لمستخدم التصنيف لقسم",
+  "INVALID_SECTION_ID": "معرف القسم غير متاح",
+  "EXISTING_USER": "يوجد حساب بهذا الرقم بالفعل",
+  "CANNOT_DELETE_ADMIN": "لا يمكن حذف حساب المسؤول",
+  "NOT_A_DRIVER_OR_DELIVERY": "المستخدم المحدد ليس سائقاً او عامل توصيل",
+  "ALREADY_APPROVED": "تم قبول هذا البائع مسبقًا",
+  "ADDING_DOCS": "خطأ اضافة هذه السجلات",
+  "INVALID_CREDENTIALS": "رقم الهاتف أو كلمة المرور غير صحيحين",
+  "INCORRECT_PASSWORD": "كلمة المرور القديمة غير صحيحة",
+  "ACCOUNT_ALREADY_ACTIVE": "الحساب مفعل مسبقًا",
+  "INVALID_ACTIVATION_TOKEN": "رمز التفعيل غير صالح",
+  "OTP_ALREADY_SENT": "تم إرسال رمز التحقق بالفعل—يرجى الانتظار قبل إعادة الطلب",
+  "RESET_PASSWORD_FAILED": "فشل في بدء عملية إعادة تعيين كلمة المرور",
+  "INVALID_RESET_TOKEN": "رمز إعادة التعيين غير صالح أو منتهي الصلاحية",
+  "INVALID_STATUS_TRANSITION": "لا يمكن الانتقال من '{oldStatus}' إلى '{newStatus}'.",
+  "CANNOT_CANCEL_ORDER": "لا يمكن إلغاء الطلب الذي هو بالفعل في الحالة '{status}'.",
+  "CANCELLATION_WINDOW_EXCEEDED": "لا يمكن إلغاء الطلب إذا مر أكثر من {window} منذ إنشائه.",
+  "FILE_SIZE_EXCEEDED": "حجم الملف المرسل كبير للغاية",
+  "ORDER_IS_ALREADY_ADMIN_MANAGED": "ان الطلب مفوض بالفعل للادارة",
+  "ORDER_ITEM_RETURN_ALREADY_REQUESTED": "ان الغرض مطلوب للترجيع بالفعل",
+  "TOO_MANY_CUSTOMER_SUPPORT_REQUEST": "انك قد قدمت طلب مراسلة بالفعل في اخر 24 ساعة",
+  "ITEM_NOT_REQUESTED_FOR_RETURN": "ان صاحب هذا المنتج لم يطلب اعادته",
+  "COMPLAINT_NOT_FOUND": "الشكوى غير موجودة",
+  "ONE_COMPLAINT_PER_DAY": "يمكنك تقديم شكوى واحدة باليوم لهذا المنتج"
+}

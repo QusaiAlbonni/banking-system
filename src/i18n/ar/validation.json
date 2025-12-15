@@ -1,0 +1,20 @@
+{
+  "isString": "يجب أن تكون {property} نصًا",
+  "isBoolean": "يجب أن تكون {property} قيمة منطقية",
+  "isNotEmpty": "يجب ألا تكون {property} فارغة",
+  "minLength": "{property} بقيمة \"{value}\" يجب أن تكون على الأقل {constraints.0} حرفًا",
+  "maxLength": "{property} بقيمة \"{value}\" يجب أن تكون على الأكثر {constraints.0} حرفًا",
+  "isPhoneNumber": "{property} بقيمة \"{value}\" ليس رقم هاتف صالحًا",
+  "isPhoneFromCountries": "{property} بقيمة \"{value}\" ليس من الدول المسموح بها",
+  "notProfane": "ان اللغة المستخدمة غير لائقة",
+  "isNotProfane":"{property} تحتوي كلام يتعارض مع صلاحياتنا",
+  "isUnique":"{property} موجود من قبل",
+  "isNumber":"{property} بقيمة \"{value}\" يجب ان تكون رقم صحيح",
+  "isDate":"{property} بقيمة \"{value}\" يجب ان تكون تاريخ صحيح",
+  "min":"{property} بقيمة \"{value}\" يجب الا تقل عن هذه القيمة",
+  "max":"{property} بقيمة \"{value}\" يجب ان لا تكون اكبر من هذه القيمة",
+  "isEnum": "يجب أن تكون {property} قيمة صالحة من النوع المحدد",
+  "isInt": "{property} بقيمة \"{value}\" يجب أن تكون عددًا صحيحًا",
+  "isPositive": "{property} بقيمة \"{value}\" يجب أن تكون قيمة موجبة",
+  "allowedRole": "allowedRole يجب أن تكون إما DRIVER أو DELIVERY"
+}

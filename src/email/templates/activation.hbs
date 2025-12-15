@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Activation</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        padding: 30px 20px;
+        text-align: center;
+        position: relative;
+      }
+      .header h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+      }
+      .header::after {
+        content: "";
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        right: 0;
+        height: 20px;
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.2) 0%,
+          rgba(118, 75, 162, 0.2) 100%
+        );
+        border-radius: 0 0 16px 16px;
+      }
+      .content {
+        padding: 30px;
+        text-align: center;
+        background-color: #fff;
+      }
+      .content p {
+        line-height: 1.6;
+        margin-bottom: 20px;
+        color: #555;
+      }
+      .code {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+        padding: 20px;
+        border-radius: 12px;
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: 4px;
+        margin: 30px auto;
+        display: inline-block;
+        color: #764ba2;
+        border: 2px dashed rgba(118, 75, 162, 0.3);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+      }
+      .footer {
+        background: linear-gradient(135deg, #f9f9f9 0%, #ececec 100%);
+        padding: 25px;
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .footer a {
+        color: #764ba2;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+      .footer a:hover {
+        color: #667eea;
+        text-decoration: underline;
+      }
+      .logo-container {
+        
+        margin-bottom: 20px;
+      }
+      .logo {
+        height: 50px;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+      .highlight {
+        font-weight: 500;
+        color: #764ba2;
+      }
+      .divider {
+        height: 1px;
+        background: linear-gradient(
+          to right,
+          transparent,
+          rgba(118, 75, 162, 0.2),
+          transparent
+        );
+        margin: 25px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo-container">
+          <img src="https://i.ibb.co/WWzR6YB3/logo.png" width="279" height="85" crossorigin="anonymous" style="display:block; margin:0 auto;">
+        </div>
+        <h2>Account Activation</h2>
+      </div>
+      <div class="content">
+        <p>Hello there,</p>
+        <p>
+          We're excited to have you on board! Please use the following
+          verification code to activate your account:
+        </p>
+
+        <div class="code">{{code}}</div>
+
+        <p>
+          This code will expire in <span class="highlight">5 minutes</span> for
+          security purposes.
+        </p>
+
+        <div class="divider"></div>
+
+        <p>
+          If you didn't request this, please
+          <a href="#">ignore this email</a> or contact our support team
+          immediately.
+        </p>
+      </div>
+      <div class="footer">
+        <p>Best regards,<br /><strong>{{appName}} Team</strong></p>
+        <p>
+          Need help?
+          <a href="mailto:support@example.com">Contact our support team</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
