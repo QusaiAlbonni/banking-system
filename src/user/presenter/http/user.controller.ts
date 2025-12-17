@@ -28,13 +28,11 @@ import { Throttle } from '@nestjs/throttler';
 import { plainToInstance } from 'class-transformer';
 import { QueryUserDto } from './dto/query-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+
 @Controller('user')
 @ApiBearerAuth()
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-
- 
 
   @ApiOperation({
     summary: 'List Users',

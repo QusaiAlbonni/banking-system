@@ -12,6 +12,7 @@ import { EmailModule } from './email/email.module';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { I18nTranslationFilter } from './translations/translations.filter';
 import { CacheModule } from '@nestjs/cache-manager';
+import { CoreModule } from './core/core.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { CacheModule } from '@nestjs/cache-manager';
     }),
     EmailModule,
     UserModule,
+    CoreModule,
   ],
   controllers: [],
   providers: [

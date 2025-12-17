@@ -34,5 +34,4 @@ export class User extends BaseUser {
   get isAdminUser(): boolean {
     return this.role === Role.ADMIN;
   }
- 
 }
