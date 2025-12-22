@@ -13,7 +13,7 @@
       <form
         action="/login"
         method="POST"
-        x-data="loginForm()"
+        x-data="window.loginForm()"
         x-ref="form"
         @submit.prevent="handleSubmit()"
         novalidate

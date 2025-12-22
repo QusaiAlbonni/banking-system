@@ -19,7 +19,7 @@ import { AccountType } from './account-type.enum';
 export class AccountFactory {
   createFromEntity(
     entity: AccountEntity,
-    members?: IndividualAccount[],
+    members?: Account[],
   ): Account {
     const type = entity.accountType;
 
@@ -46,6 +46,7 @@ export class AccountFactory {
     individual.ownerId = entity.ownerId;
     individual.status = entity.status as AccountStatus;
     individual.type = entity.accountType;
+    individual.primaryOwnerName = entity.primaryOwnerName!;
     individual.createdAt = entity.createdAt;
     individual.updatedAt = entity.updatedAt;
     individual.balance = Number(entity.balance);
@@ -70,6 +71,7 @@ export class AccountFactory {
     entity.accountType = domain.type;
     entity.isGroup = domain instanceof GroupAccount;
     entity.groupName = domain instanceof GroupAccount ? domain.groupName : null;
+    entity.primaryOwnerName = domain instanceof IndividualAccount ? domain.primaryOwnerName : null;
     entity.balance = domain.getBalance().toString();
     entity.status = domain.status;
 
@@ -98,7 +100,6 @@ export class AccountFactory {
       });
     }
 
-    // createdAt/updatedAt/version/joinedAt are handled by TypeORM columns.
     return entity;
   }
 
@@ -113,16 +114,20 @@ export class AccountFactory {
       maxWithdrawal?: number;
     },
   ): Account {
+    
     const entity = new AccountEntity();
     entity.id = randomUUID();
     entity.ownerId = ownerId;
     entity.accountType = type;
     entity.isGroup = false;
+    entity.primaryOwnerName = primaryOwnerName;
+    entity.groupName = null;
     entity.balance = '0';
     entity.status = AccountStatus.ACTIVE;
     entity.createdAt = new Date();
     entity.updatedAt = new Date();
     entity.groupMembers = [];
+
     if (strategyConfig) {
       if (strategyConfig.loanInterestRate !== undefined) {
         entity.loanInterestRate = strategyConfig.loanInterestRate;
@@ -138,10 +143,7 @@ export class AccountFactory {
       }
     }
 
-
-    const account = this.createFromEntity(entity) as IndividualAccount;
-    account.primaryOwnerName = primaryOwnerName;
-    account.metadata.primaryOwnerName = primaryOwnerName;
+    const account = this.createFromEntity(entity);
     return account;
   }
 
@@ -149,7 +151,7 @@ export class AccountFactory {
     ownerId: number,
     groupName: string,
     type: AccountType = AccountType.STANDARD,
-    members?: IndividualAccount[],
+    members?: Account[],
     strategyConfig?: {
       loanInterestRate?: number;
       loanMinPayment?: number;
@@ -157,17 +159,20 @@ export class AccountFactory {
       maxWithdrawal?: number;
     },
   ): Account {
+
     const entity = new AccountEntity();
     entity.id = randomUUID();
     entity.ownerId = ownerId;
     entity.accountType = type;
     entity.isGroup = true;
     entity.groupName = groupName;
+    entity.primaryOwnerName = null;
     entity.balance = '0';
     entity.status = AccountStatus.ACTIVE;
     entity.createdAt = new Date();
     entity.updatedAt = new Date();
     entity.groupMembers = [];
+    
     if (strategyConfig) {
       if (strategyConfig.loanInterestRate !== undefined) {
         entity.loanInterestRate = strategyConfig.loanInterestRate;
@@ -183,7 +188,7 @@ export class AccountFactory {
       }
     }
 
-    const account = this.createFromEntity(entity, members) as GroupAccount;
+    const account = this.createFromEntity(entity, members);
     return account;
   }
 

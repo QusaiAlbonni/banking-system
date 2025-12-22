@@ -39,8 +39,12 @@ export class AccountService {
     private readonly accountEntityRepo: Repository<AccountEntity>,
   ) {}
 
-  async fetchAccount(){
+  async fetchAccount(id: string){
+    return await this.accountRepository.getAccount(id);
+  }
 
+  async closeAccount(id) {
+    
   }
 
   async createIndividualAccount(
