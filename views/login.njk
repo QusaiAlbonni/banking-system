@@ -1,0 +1,119 @@
+{# views/login.njk - extends your provided base template #}
+{% extends "base.njk" %}
+
+{% block title %}Sign in — Bank{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-12">
+  <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+    <div class="px-6 py-8">
+      <h1 class="text-2xl font-semibold text-gray-800">Sign in to your account</h1>
+      <p class="mt-2 text-sm text-gray-600">Enter your email and password to continue.</p>
+
+      <form
+        action="/login"
+        method="POST"
+        x-data="loginForm()"
+        x-ref="form"
+        @submit.prevent="handleSubmit()"
+        novalidate
+        class="mt-6"
+        aria-labelledby="signin-heading"
+      >
+        {# optional csrf token if your backend supplies one #}
+        {% if csrfToken %}
+          <input type="hidden" name="csrfToken" value="{{ csrfToken }}">
+        {% endif %}
+
+        <div class="space-y-4">
+          <!-- Email -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              x-model.trim="email"
+              x-on:blur="touched.email = true"
+              :class="{'border-red-500': touched.email && !emailValid, 'border-gray-300': !(touched.email && !emailValid)}"
+              autocomplete="email"
+              required
+              class="mt-1 block w-full rounded-md shadow-sm border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              aria-invalid="false"
+              aria-describedby="email-error"
+            >
+            <p class="mt-1 text-sm" id="email-error" x-text="emailError" x-show="touched.email && !emailValid" role="alert" aria-live="polite"></p>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <div class="relative mt-1">
+              <input
+                id="password"
+                name="password"
+                :type="showPassword ? 'text' : 'password'"
+                x-model="password"
+                x-on:blur="touched.password = true"
+                :class="{'border-red-500': touched.password && !passwordValid, 'border-gray-300': !(touched.password && !passwordValid)}"
+                autocomplete="current-password"
+                required
+                class="block w-full rounded-md shadow-sm border px-3 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                aria-describedby="password-error"
+              >
+              <button
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute inset-y-0 right-0 pr-2 flex items-center text-sm"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                tabindex="-1"
+              >
+                <span x-text="showPassword ? 'Hide' : 'Show'" class="text-gray-600"></span>
+              </button>
+            </div>
+            <p class="mt-1 text-sm" id="password-error" x-text="passwordError" x-show="touched.password && !passwordValid" role="alert" aria-live="polite"></p>
+          </div>
+
+          <!-- Remember + Forgot -->
+          <div class="flex items-center justify-between">
+            <label class="inline-flex items-center text-sm">
+              <input type="checkbox" name="remember" class="h-4 w-4 rounded border-gray-300">
+              <span class="ml-2 text-gray-600">Remember me</span>
+            </label>
+            <a href="/forgot-password" class="text-sm text-indigo-600 hover:underline">Forgot password?</a>
+          </div>
+
+          <!-- Server error placeholder -->
+          <template x-if="serverError">
+            <div class="rounded-md bg-red-50 p-3 text-red-700 text-sm" role="alert" x-text="serverError"></div>
+          </template>
+
+          <!-- Submit -->
+          <div>
+            <button
+              type="submit"
+              :disabled="!formValid || submitting"
+              :class="{
+                'opacity-50 cursor-not-allowed': (!formValid || submitting),
+                'hover:bg-indigo-600': (formValid && !submitting)
+              }"
+              class="w-full inline-flex justify-center items-center rounded-md bg-indigo-500 px-4 py-2 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            >
+              <span x-show="!submitting" x-text="submitLabel"></span>
+              <svg x-show="submitting" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <p class="mt-6 text-center text-sm text-gray-600">
+        Don't have an account?
+        <a href="/signup" class="text-indigo-600 font-medium hover:underline">Sign up</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

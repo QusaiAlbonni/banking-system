@@ -29,7 +29,7 @@ import { IndividualAccount, GroupAccount } from '@/account/domain/account';
 import { plainToInstance } from 'class-transformer';
 
 @ApiTags('Accounts')
-@Controller('accounts')
+@Controller('api/accounts')
 @ApiBearerAuth()
 @UseGuards(JwtGuard)
 export class AccountController {
@@ -60,7 +60,7 @@ export class AccountController {
     @GetUser() user: AuthenticatedUser,
   ): Promise<AccountResponseDto> {
     const account = await this.accountService.createIndividualAccount({
-      ownerId: user.id.toString(),
+      ownerId: user.id,
       primaryOwnerName: dto.primaryOwnerName,
       accountType: AccountType.STANDARD,
       maxDeposit: dto.maxDeposit,
@@ -95,7 +95,7 @@ export class AccountController {
     @GetUser() user: AuthenticatedUser,
   ): Promise<AccountResponseDto> {
     const account = await this.accountService.createIndividualAccount({
-      ownerId: user.id.toString(),
+      ownerId: user.id,
       primaryOwnerName: dto.primaryOwnerName,
       accountType: AccountType.LOAN,
       loanInterestRate: dto.loanInterestRate,
@@ -130,7 +130,7 @@ export class AccountController {
     @GetUser() user: AuthenticatedUser,
   ): Promise<AccountResponseDto> {
     const account = await this.accountService.createIndividualAccount({
-      ownerId: user.id.toString(),
+      ownerId: user.id,
       primaryOwnerName: dto.primaryOwnerName,
       accountType: AccountType.FEE_ACCOUNT,
       maxDeposit: dto.maxDeposit,
@@ -167,7 +167,7 @@ export class AccountController {
   ): Promise<AccountResponseDto> {
     const accountType = dto.accountType as AccountType;
     const account = await this.accountService.createGroupAccount({
-      ownerId: user.id.toString(),
+      ownerId: user.id,
       groupName: dto.groupName,
       accountType,
       memberAccountIds: dto.memberAccountIds,

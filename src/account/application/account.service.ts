@@ -10,7 +10,7 @@ import { Repository } from 'typeorm';
 import { AccountRepository } from './account.repository';
 
 export interface CreateIndividualAccountDto {
-  ownerId: string;
+  ownerId: number;
   primaryOwnerName: string;
   accountType: AccountType;
   loanInterestRate?: number;
@@ -20,7 +20,7 @@ export interface CreateIndividualAccountDto {
 }
 
 export interface CreateGroupAccountDto {
-  ownerId: string;
+  ownerId: number;
   groupName: string;
   accountType: AccountType;
   memberAccountIds: string[];

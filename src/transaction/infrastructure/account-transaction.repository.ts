@@ -30,10 +30,8 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
 
     const fromEntity = new AccountEntity();
     fromEntity.id = 'from';
-    fromEntity.ownerId = 'owner';
-    fromEntity.accountType = 'STANDARD';
     fromEntity.isGroup = false;
-    fromEntity.balance = 0;
+    fromEntity.balance = '0';
     fromEntity.status = 'ACTIVE';
     fromEntity.createdAt = new Date();
     fromEntity.updatedAt = new Date();

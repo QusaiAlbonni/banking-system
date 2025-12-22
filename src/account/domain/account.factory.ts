@@ -21,15 +21,16 @@ export class AccountFactory {
     entity: AccountEntity,
     members?: IndividualAccount[],
   ): Account {
-    const type = (entity.accountType as AccountType) ?? AccountType.STANDARD;
+    const type = entity.accountType;
 
     if (entity.isGroup) {
       const group = new GroupAccount();
       group.id = entity.id;
       group.ownerId = entity.ownerId;
       group.status = entity.status as AccountStatus;
-      group['isGroup'] = true;
-      group['groupName'];
+      group.type = type;
+      group.isGroup = true;
+      group.groupName = entity.groupName!;
       group.createdAt = entity.createdAt;
       group.updatedAt = entity.updatedAt;
       group.metadata = { accountType: type };
@@ -44,9 +45,10 @@ export class AccountFactory {
     individual.id = entity.id;
     individual.ownerId = entity.ownerId;
     individual.status = entity.status as AccountStatus;
+    individual.type = entity.accountType;
     individual.createdAt = entity.createdAt;
     individual.updatedAt = entity.updatedAt;
-    individual.balance = entity.balance;
+    individual.balance = Number(entity.balance);
     individual.metadata = { accountType: type };
     this.applyStrategies(individual, type, entity);
     return individual;
@@ -54,7 +56,6 @@ export class AccountFactory {
 
   toEntity(
     domain: Account,
-    type: AccountType = AccountType.STANDARD,
     members?: Account[],
     strategyConfig?: {
       loanInterestRate?: number;
@@ -66,9 +67,10 @@ export class AccountFactory {
     const entity = new AccountEntity();
     entity.id = domain.id;
     entity.ownerId = domain.ownerId;
-    entity.accountType = type;
+    entity.accountType = domain.type;
     entity.isGroup = domain instanceof GroupAccount;
-    entity.balance = domain.getBalance();
+    entity.groupName = domain instanceof GroupAccount ? domain.groupName : null;
+    entity.balance = domain.getBalance().toString();
     entity.status = domain.status;
 
     // Set strategy configuration fields if provided
@@ -101,7 +103,7 @@ export class AccountFactory {
   }
 
   newIndividual(
-    ownerId: string,
+    ownerId: number,
     primaryOwnerName: string,
     type: AccountType = AccountType.STANDARD,
     strategyConfig?: {
@@ -116,7 +118,7 @@ export class AccountFactory {
     entity.ownerId = ownerId;
     entity.accountType = type;
     entity.isGroup = false;
-    entity.balance = 0;
+    entity.balance = '0';
     entity.status = AccountStatus.ACTIVE;
     entity.createdAt = new Date();
     entity.updatedAt = new Date();
@@ -136,6 +138,7 @@ export class AccountFactory {
       }
     }
 
+
     const account = this.createFromEntity(entity) as IndividualAccount;
     account.primaryOwnerName = primaryOwnerName;
     account.metadata.primaryOwnerName = primaryOwnerName;
@@ -143,7 +146,7 @@ export class AccountFactory {
   }
 
   newGroup(
-    ownerId: string,
+    ownerId: number,
     groupName: string,
     type: AccountType = AccountType.STANDARD,
     members?: IndividualAccount[],
@@ -159,7 +162,8 @@ export class AccountFactory {
     entity.ownerId = ownerId;
     entity.accountType = type;
     entity.isGroup = true;
-    entity.balance = 0;
+    entity.groupName = groupName;
+    entity.balance = '0';
     entity.status = AccountStatus.ACTIVE;
     entity.createdAt = new Date();
     entity.updatedAt = new Date();
@@ -180,8 +184,6 @@ export class AccountFactory {
     }
 
     const account = this.createFromEntity(entity, members) as GroupAccount;
-    account.groupName = groupName;
-    account.metadata.groupName = groupName;
     return account;
   }
 

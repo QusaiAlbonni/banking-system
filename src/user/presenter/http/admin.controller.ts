@@ -13,7 +13,7 @@ import {
 import { CreateStaffResponseDto } from './dto/create-staff-response.dto';
 import { CreateStaffDto } from './dto/create-staff.dto';
 
-@Controller('admin')
+@Controller('api/admin')
 @ApiBearerAuth()
 export class AdminController {
   constructor(private readonly userService: UserService) {}

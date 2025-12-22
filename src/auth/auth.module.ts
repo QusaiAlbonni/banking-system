@@ -13,6 +13,7 @@ import { AuthInfraStructureModule } from './infrastructure/infrastructure.module
 import { AuthController } from './presenter/http/auth.controller';
 import { JwtStrategy } from './strategy/jwt.strategy';
 import { RefreshTokenStrategy } from './strategy/refresh-token.strategy';
+import { AuthViewsController } from './presenter/http/pages/auth-views.controller';
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -43,7 +44,7 @@ import { RefreshTokenStrategy } from './strategy/refresh-token.strategy';
     RefreshTokenStrategy,
     OtpService,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthViewsController],
   exports: [AuthService, TokenService],
 })
 export class AuthModule {}
