@@ -23,15 +23,11 @@ export class AccountResponseDto {
 
   @Expose()
   @ApiProperty({ enum: AccountType })
-  accountType: AccountType;
+  type: AccountType;
 
   @Expose()
   @ApiProperty({ example: false })
   isGroup: boolean;
-
-  @Expose()
-  @ApiProperty({ example: 'John Doe', required: false })
-  primaryOwnerName?: string;
 
   @Expose()
   @ApiProperty({ example: 'Family Group', required: false })

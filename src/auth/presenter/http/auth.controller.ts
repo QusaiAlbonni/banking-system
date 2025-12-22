@@ -34,7 +34,7 @@ import {
 import { LoginResponseDto } from './dto/login-response.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
   constructor(private authService: AuthService) { }
 

@@ -19,6 +19,7 @@ export class IndividualAccount extends Account {
 export class GroupAccount extends Account {
   private _aggregatedBalance = 0;
   groupName!: string;
+  isGroup: true;
   members: IndividualAccount[] = [];
 
   get balance(){

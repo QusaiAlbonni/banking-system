@@ -1,4 +1,5 @@
 import { AccountStatus } from './account-status.enum';
+import { AccountType } from './account-type.enum';
 
 export interface Withdrawable {
   withdraw(amount: number): boolean;
@@ -18,8 +19,9 @@ export interface DepositStrategy {
 
 export abstract class Account implements Withdrawable, Depositable {
   id!: string;
-  ownerId!: string;
+  ownerId!: number;
   status!: AccountStatus;
+  type: AccountType;
   createdAt!: Date;
   updatedAt!: Date;
   metadata: Record<string, string> = {};

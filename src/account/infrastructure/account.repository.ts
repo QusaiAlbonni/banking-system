@@ -28,7 +28,6 @@ export class OrmAccountRepository implements AccountRepository {
     // use factory mapping so mapping rules are centralized
     const accountEntity = this.accountFactory.toEntity(
       account,
-      AccountType.STANDARD,
     );
     await this.repo.save(accountEntity);
   }

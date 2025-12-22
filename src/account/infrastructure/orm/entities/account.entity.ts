@@ -1,3 +1,5 @@
+import { AccountType } from '@/account/domain/account-type.enum';
+import { UserEntity } from '@/user/infrastructure/orm/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -16,13 +18,19 @@ export class AccountEntity {
   id: string;
 
   @Column({ name: 'account_type', type: 'varchar', length: 50 })
-  accountType: string;
+  accountType: AccountType;
 
   @Column({ name: 'is_group', type: 'boolean', default: false })
   isGroup: boolean;
 
-  @Column({ name: 'owner_id', type: 'varchar', length: 255 })
-  ownerId: string;
+  @Column({ name: 'owner_id' })
+  ownerId: number;
+
+  @ManyToOne(() => UserEntity, (user) => user.accounts, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'owner_id' })
+  owner: UserEntity;
 
   @Column({
     name: 'balance',
@@ -31,10 +39,13 @@ export class AccountEntity {
     scale: 2,
     default: 0,
   })
-  balance: number;
+  balance: string;
 
   @Column({ name: 'status', type: 'varchar', length: 50 })
   status: string;
+
+  @Column({ name: 'group_name', type: 'varchar', length: 255, nullable: true })
+  groupName?: string | null;
 
   @Column({
     name: 'loan_interest_rate',

@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import { AccountEntity } from '@/account/infrastructure/orm/entities/account.entity';
 import { TokenEntity } from '@/auth/infrastructure/orm/entities/token.entity';
 import { Role } from '@/user/domain/role';
 import {
@@ -50,6 +51,9 @@ export class UserEntity {
 
   @OneToMany(() => TokenEntity, (t) => t.user)
   tokens: TokenEntity[];
+
+  @OneToMany(() => AccountEntity, (ae) => ae.owner)
+  accounts?: AccountEntity[];
 
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
