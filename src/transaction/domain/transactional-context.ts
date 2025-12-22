@@ -1,5 +1,5 @@
-import { Transaction } from './transaction';
 import { Account } from '../../account/domain/account.interface';
+import { Transaction } from './transaction';
 
 export class TransactionalContext {
   transaction!: Transaction;
@@ -8,6 +8,12 @@ export class TransactionalContext {
   // dbSession is kept as unknown to avoid coupling to a specific ORM here.
   dbSession?: unknown;
   isNewTransaction = false;
+  // Approval workflow fields
+  requiresManagerApproval = false;
+  riskScore?: number;
+  approvalNotes?: string;
+  approvedBy?: string;
+  approvedAt?: Date;
 
   getTransaction(): Transaction {
     return this.transaction;
@@ -21,7 +27,18 @@ export class TransactionalContext {
     return this.toAccount;
   }
 
-  markDirty(): void {
-    // placeholder to mark unit-of-work as dirty
+  markForManagerApproval(reason: string): void {
+    this.requiresManagerApproval = true;
+    this.approvalNotes = reason;
+  }
+
+  approve(approvedBy: string): void {
+    this.requiresManagerApproval = false;
+    this.approvedBy = approvedBy;
+    this.approvedAt = new Date();
+  }
+
+  clearManagerApprovalRequirement() {
+    this.requiresManagerApproval = false;
   }
 }

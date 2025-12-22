@@ -1,26 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { AccountRepository } from '../../account/application/account.repository';
-import { PaymentGateway } from '../../payment/application/payment-gateway.interface';
 import { TransactionHandlerChainFactory } from '../domain/transaction-handler-chain.factory';
-import { TransactionStatus, TransactionType } from '../domain/transaction.enums';
+import { TransactionType } from '../domain/transaction.enums';
 import { TransactionFactory } from '../domain/transaction.factory';
 import { TransactionalContext } from '../domain/transactional-context';
 import { AccountTransactionRepository } from './account-transaction.repository';
 
 /**
- * Facade service for deposit operations
- * Hides complex approval workflow, payment gateway integration, and transaction execution
+ * Facade service for withdrawal operations
+ * Hides complex approval workflow and transaction execution
  */
 @Injectable()
-export class DepositService {
+export class WithdrawService {
   constructor(
     private readonly accountRepository: AccountRepository,
-    private readonly paymentGateway: PaymentGateway,
     private readonly transactionFactory: TransactionFactory,
     private readonly accountTransactionRepository: AccountTransactionRepository,
     private readonly handlerChainFactory: TransactionHandlerChainFactory,
-  ) { }
-  async processDeposit(
+  ) {}
+
+  async processWithdraw(
     accountId: string,
     amount: number,
   ): Promise<TransactionalContext> {
@@ -30,19 +29,17 @@ export class DepositService {
       throw new Error(`Account ${accountId} not found`);
     }
 
-    // try to use the Db session on transaction begin 
     // Create transaction
     const transaction = this.transactionFactory.newTransaction(
-      TransactionType.DEPOSIT,
+      TransactionType.WITHDRAW,
       amount,
-      undefined,
       accountId,
     );
 
     // Create context
     const ctx = new TransactionalContext();
     ctx.transaction = transaction;
-    ctx.toAccount = account;
+    ctx.fromAccount = account;
     ctx.isNewTransaction = true;
 
     // Execute approval workflow BEFORE transaction execution
@@ -56,21 +53,11 @@ export class DepositService {
       return ctx;
     }
 
-    // Charge payment gateway
-    const paymentSuccess = this.paymentGateway.charge(amount);
-    if (!paymentSuccess) {
-      // create a failed method inside the transaction class transaction.failed()
-      ctx.getTransaction().status = TransactionStatus.FAILED;
-      await this.accountTransactionRepository.saveContext(ctx);
-      return ctx;
-    }
-
     // Execute transaction
-    const success = transaction.execute(undefined, account);
+    const success = transaction.execute(account);
 
     if (!success) {
-      // Refund payment gateway on failure
-      this.paymentGateway.payout(amount);
+      // Transaction failed
       await this.accountTransactionRepository.saveContext(ctx);
       return ctx;
     }
@@ -82,7 +69,7 @@ export class DepositService {
     return ctx;
   }
 
-  async approveDeposit(
+  async approveWithdraw(
     transactionId: string,
     approvedBy: string,
   ): Promise<TransactionalContext> {
@@ -98,26 +85,15 @@ export class DepositService {
     // Approve
     ctx.approve(approvedBy);
 
-    // Charge payment gateway
-    const amount = ctx.getTransaction().amount;
-    const paymentSuccess = this.paymentGateway.charge(amount);
-    if (!paymentSuccess) {
-      ctx.getTransaction().status = TransactionStatus.FAILED;
-      await this.accountTransactionRepository.saveContext(ctx);
-      return ctx;
-    }
-
     // Execute transaction
-    const account = ctx.getToAccount();
+    const account = ctx.getFromAccount();
     if (!account) {
-      throw new Error('Target account not found');
+      throw new Error('Source account not found');
     }
 
-    const success = ctx.getTransaction().execute(undefined, account);
+    const success = ctx.getTransaction().execute(account);
 
     if (!success) {
-      // Refund payment gateway on failure
-      this.paymentGateway.payout(amount);
       await this.accountTransactionRepository.saveContext(ctx);
       return ctx;
     }
@@ -129,3 +105,4 @@ export class DepositService {
     return ctx;
   }
 }
+
