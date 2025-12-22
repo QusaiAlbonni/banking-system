@@ -3,12 +3,6 @@ import { Account } from '../account.interface';
 export abstract class AccountDecorator extends Account {
   protected constructor(protected readonly decoratedAccount: Account) {
     super();
-    this.id = decoratedAccount.id;
-    this.ownerId = decoratedAccount.ownerId;
-    this.status = decoratedAccount.status;
-    this.createdAt = decoratedAccount.createdAt;
-    this.updatedAt = decoratedAccount.updatedAt;
-    this.metadata = decoratedAccount.metadata;
   }
 
   getBalance(): number {
@@ -29,5 +23,9 @@ export abstract class AccountDecorator extends Account {
 
   increaseBalance(amount: number): void {
     this.decoratedAccount.decreaseBalance(amount);
+  }
+
+  getInterest(amount: number): number {
+    return this.decoratedAccount.getInterest(amount);
   }
 }
