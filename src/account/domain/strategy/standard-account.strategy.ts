@@ -1,15 +1,9 @@
 import {
-  DepositStrategy,
-  WithdrawStrategy,
   Account,
 } from '../account.interface';
-import { AccountStatus } from '../account-status.enum';
-import { IndividualAccount } from '../account';
-import {
-  STANDARD_MIN_BALANCE,
-  STANDARD_MAX_WITHDRAWAL,
-  STANDARD_MAX_DEPOSIT,
-} from './strategy.constants';
+import { DepositStrategy } from './deposit.strategy';
+import { WithdrawStrategy } from './withdraw.strategy';
+
 
 /**
  * Standard account strategy with balance checks, transaction limits, and minimum balance enforcement

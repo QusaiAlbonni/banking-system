@@ -1,5 +1,8 @@
 import { AccountStatus } from './account-status.enum';
 import { AccountType } from './account-type.enum';
+import { DepositStrategy } from './strategy/deposit.strategy';
+import { InterestStrategy } from './strategy/interest.strategy';
+import { WithdrawStrategy } from './strategy/withdraw.strategy';
 
 export interface Withdrawable {
   withdraw(amount: number): boolean;
@@ -7,14 +10,6 @@ export interface Withdrawable {
 
 export interface Depositable {
   deposit(amount: number): boolean;
-}
-
-export interface WithdrawStrategy {
-  withdraw(account: Account, amount: number): boolean;
-}
-
-export interface DepositStrategy {
-  deposit(account: Account, amount: number): boolean;
 }
 
 export abstract class Account implements Withdrawable, Depositable {
@@ -28,6 +23,8 @@ export abstract class Account implements Withdrawable, Depositable {
 
   protected withdrawStrategy!: WithdrawStrategy;
   protected depositStrategy!: DepositStrategy;
+
+  protected interestStrategy!: InterestStrategy;
 
   abstract getBalance(): number;
 
@@ -43,6 +40,10 @@ export abstract class Account implements Withdrawable, Depositable {
       return false;
     }
     return this.depositStrategy.deposit(this, amount);
+  }
+
+  getInterest(amount: number){
+    return this.interestStrategy.calculate(amount);
   }
 
   abstract decreaseBalance(amount: number): void;

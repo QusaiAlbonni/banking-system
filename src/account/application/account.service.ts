@@ -17,6 +17,7 @@ export interface CreateIndividualAccountDto {
   loanMinPayment?: number;
   maxDeposit?: number;
   maxWithdrawal?: number;
+  balance?: number;
 }
 
 export interface CreateGroupAccountDto {
@@ -51,6 +52,7 @@ export class AccountService {
     dto: CreateIndividualAccountDto,
   ): Promise<Account> {
     const account = this.accountFactory.newIndividual(
+      dto.balance ?? 0,
       dto.ownerId,
       dto.primaryOwnerName,
       dto.accountType,

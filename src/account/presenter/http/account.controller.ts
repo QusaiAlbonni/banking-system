@@ -95,6 +95,7 @@ export class AccountController {
     @GetUser() user: AuthenticatedUser,
   ): Promise<AccountResponseDto> {
     const account = await this.accountService.createIndividualAccount({
+      balance: -dto.loan,
       ownerId: user.id,
       primaryOwnerName: dto.primaryOwnerName,
       accountType: AccountType.LOAN,
