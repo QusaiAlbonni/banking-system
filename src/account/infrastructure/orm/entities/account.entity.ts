@@ -47,6 +47,10 @@ export class AccountEntity {
   @Column({ name: 'group_name', type: 'varchar', length: 255, nullable: true })
   groupName?: string | null;
 
+  @Column({ name: 'primary_owner_name', type: 'varchar', length: 255, nullable: true })
+  primaryOwnerName?: string | null;
+
+
   @Column({
     name: 'loan_interest_rate',
     type: 'numeric',

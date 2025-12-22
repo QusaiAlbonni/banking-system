@@ -5,4 +5,4 @@ import loginForm from './login';
 window['Alpine'] = Alpine;
 Alpine.start();
 
-loginForm();
+(window as any).loginForm= loginForm;

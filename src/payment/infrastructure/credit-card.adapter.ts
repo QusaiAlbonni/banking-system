@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PaymentGateway } from '../application/payment-gateway.interface';
 
 // Placeholder for third-party SDK
+@Injectable()
 export class ThirdPartyCreditCardAPI {}
 
 @Injectable()

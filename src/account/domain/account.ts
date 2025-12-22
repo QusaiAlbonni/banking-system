@@ -20,7 +20,7 @@ export class GroupAccount extends Account {
   private _aggregatedBalance = 0;
   groupName!: string;
   isGroup: true;
-  members: IndividualAccount[] = [];
+  members: Account[] = [];
 
   get balance(){
     return this.getBalance();
@@ -48,6 +48,7 @@ export class GroupAccount extends Account {
       const ok = member.withdraw(share);
       if (!ok) {
         success = false;
+        break;
       }
     }
 

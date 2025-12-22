@@ -1,10 +1,14 @@
 const path = require('path');
 
-module.exports = {
+export default {
   root: process.cwd(),
   build: {
     outDir: 'public',
     emptyOutDir: true,
+    minify: 'esbuild',
+    esbuild: {
+      keepNames: true
+    },
     rollupOptions: {
       input: path.resolve(__dirname, 'src/js/main.ts'),
       output: {
