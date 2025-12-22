@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { Transaction } from '../domain/transaction';
 import { TransactionEntity } from '../infrastructure/orm/entities/transaction.entity';
+import { Transaction } from './transaction';
 import {
   TransactionStatus,
   TransactionType,
-} from '../domain/transaction.enums';
+} from './transaction.enums';
 
 @Injectable()
 export class TransactionFactory {
