@@ -22,6 +22,7 @@ import {
 import { TransactionController } from './presenter/http/transaction.controller';
 import { TransactionHistoryController } from './presenter/http/transaction-history.controller';
 import { NotificationsModule } from '@/notifications/notifications.module';
+import { TransactionEventsHandler } from './application/event-handlers/transaction.events-handler';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { NotificationsModule } from '@/notifications/notifications.module';
     TransferService,
     TransactionHistoryService,
     OrmTransactionRepository,
+    TransactionEventsHandler,
     OrmAccountTransactionRepository,
     {
       provide: AccountTransactionRepository,
