@@ -1,8 +1,8 @@
 import Alpine from '@alpinejs/csp';
-import '../css/styles.css'; 
+import * as AlpineTypes from 'alpinejs';
+import '../css/styles.css';
 import loginForm from './login';
 
 window['Alpine'] = Alpine;
 Alpine.start();
-
-(window as any).loginForm= loginForm;
+(Alpine as AlpineTypes.Alpine).data('login', loginForm);

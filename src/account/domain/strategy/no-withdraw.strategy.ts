@@ -1,4 +1,5 @@
-import { WithdrawStrategy, Account } from '../account.interface';
+import { Account } from '../account.interface';
+import { WithdrawStrategy } from './withdraw.strategy';
 
 /**
  * Strategy that explicitly denies all withdrawal attempts

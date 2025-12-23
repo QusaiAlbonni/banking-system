@@ -1,4 +1,5 @@
-import { DepositStrategy, Account } from '../account.interface';
+import { Account } from '../account.interface';
+import { DepositStrategy } from './deposit.strategy';
 
 /**
  * Strategy that explicitly denies all deposit attempts
