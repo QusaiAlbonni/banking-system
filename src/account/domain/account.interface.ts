@@ -1,5 +1,8 @@
 import { AccountStatus } from './account-status.enum';
 import { AccountType } from './account-type.enum';
+import { DepositStrategy } from './strategy/deposit.strategy';
+import { InterestStrategy } from './strategy/interest.strategy';
+import { WithdrawStrategy } from './strategy/withdraw.strategy';
 import { AccountState } from './state/account-state.interface';
 
 export interface Withdrawable {
@@ -30,6 +33,8 @@ export abstract class Account implements Withdrawable, Depositable {
   protected withdrawStrategy!: WithdrawStrategy;
   protected depositStrategy!: DepositStrategy;
   protected currentState!: AccountState;
+
+  protected interestStrategy!: InterestStrategy;
 
   abstract getBalance(): number;
 
@@ -79,6 +84,10 @@ export abstract class Account implements Withdrawable, Depositable {
       throw new Error('Account state is not initialized');
     }
     this.currentState.close(this);
+  }
+
+  getInterest(amount: number){
+    return this.interestStrategy.calculate(amount);
   }
 
   abstract decreaseBalance(amount: number): void;

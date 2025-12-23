@@ -1,5 +1,6 @@
+import { Account } from '../account.interface';
+import { DepositStrategy } from './deposit.strategy';
 import { DepositNotAllowedException } from '../../application/account.exceptions';
-import { Account, DepositStrategy } from '../account.interface';
 
 /**
  * Strategy that explicitly denies all deposit attempts

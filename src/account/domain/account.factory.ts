@@ -15,6 +15,7 @@ import {
 import { AccountStatus } from './account-status.enum';
 import { AccountType } from './account-type.enum';
 import { AccountStateFactory } from './state/account-state.factory';
+import { LoanInterestStrategy } from './strategy/loan-account.strategy';
 
 @Injectable()
 export class AccountFactory {
@@ -107,6 +108,7 @@ export class AccountFactory {
   }
 
   newIndividual(
+    balance: number,
     ownerId: number,
     primaryOwnerName: string,
     type: AccountType = AccountType.STANDARD,
@@ -125,7 +127,7 @@ export class AccountFactory {
     entity.isGroup = false;
     entity.primaryOwnerName = primaryOwnerName;
     entity.groupName = null;
-    entity.balance = '0';
+    entity.balance = balance.toString();
     entity.status = AccountStatus.ACTIVE;
     entity.createdAt = new Date();
     entity.updatedAt = new Date();
@@ -210,9 +212,9 @@ export class AccountFactory {
         // Use loan-specific fields from entity if available
         (account as any).withdrawStrategy = new NoWithdrawStrategy();
         (account as any).depositStrategy = new LoanAccountStrategy(
-          entity.loanInterestRate,
           entity.loanMinPayment,
         );
+        (account as any).InterestStrategy = new LoanInterestStrategy();
         break;
       case AccountType.FEE_ACCOUNT:
         // Example: fee account only receives deposits, never withdraws directly.

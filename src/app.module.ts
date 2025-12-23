@@ -16,6 +16,9 @@ import { CoreModule } from './core/core.module';
 import { AccountModule } from './account/account.module';
 import { TransactionModule } from './transaction/transaction.module';
 import { PaymentModule } from './payment/payment.module';
+import { LoggingModule } from './logging/logging.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { MessagingModule } from './messaging/messaging.module';
 
 @Module({
   imports: [
@@ -51,6 +54,9 @@ import { PaymentModule } from './payment/payment.module';
     AccountModule,
     TransactionModule,
     PaymentModule,
+    LoggingModule,
+    NotificationsModule,
+    MessagingModule
   ],
   controllers: [],
   providers: [

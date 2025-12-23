@@ -4,9 +4,10 @@ import {
 } from '../../application/account.exceptions';
 import {
   Account,
-  DepositStrategy,
-  WithdrawStrategy,
 } from '../account.interface';
+import { DepositStrategy } from './deposit.strategy';
+import { WithdrawStrategy } from './withdraw.strategy';
+
 
 /**
  * Standard account strategy with balance checks, transaction limits, and minimum balance enforcement

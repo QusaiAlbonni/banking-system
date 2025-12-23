@@ -1,5 +1,7 @@
+import { Account } from '../account.interface';
+import { WithdrawStrategy } from './withdraw.strategy';
 import { WithdrawalNotAllowedException } from '../../application/account.exceptions';
-import { Account, WithdrawStrategy } from '../account.interface';
+
 
 /**
  * Strategy that explicitly denies all withdrawal attempts

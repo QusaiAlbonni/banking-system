@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { AccountEntity } from '@/account/infrastructure/orm/entities/account.entity';
 import { TokenEntity } from '@/auth/infrastructure/orm/entities/token.entity';
+import { FCMDeviceEntity } from '@/messaging/fcm/infrastucture/entities/device.entity';
 import { Role } from '@/user/domain/role';
 import {
   BeforeInsert,
@@ -54,6 +55,9 @@ export class UserEntity {
 
   @OneToMany(() => AccountEntity, (ae) => ae.owner)
   accounts?: AccountEntity[];
+
+  @OneToMany(() => FCMDeviceEntity, (device) => device.user)
+  devices: FCMDeviceEntity[];
 
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
