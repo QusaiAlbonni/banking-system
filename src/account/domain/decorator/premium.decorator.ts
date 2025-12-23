@@ -11,17 +11,21 @@ export class PremiumDecorator extends AccountDecorator {
     this.metadata = { ...account.metadata, premium: 'true' };
   }
 
-  withdraw(amount: number): boolean {
-    if (amount <= 0) return false;
+  withdraw(amount: number): void {
+    if (amount <= 0) {
+      throw new Error('Withdrawal amount must be greater than 0');
+    }
     const adjusted = amount * (1 + this.withdrawFeePercent);
-    return this.decoratedAccount.withdraw(adjusted);
+    this.decoratedAccount.withdraw(adjusted);
   }
 
-  deposit(amount: number): boolean {
-    if (amount <= 0) return false;
+  deposit(amount: number): void {
+    if (amount <= 0) {
+      throw new Error('Deposit amount must be greater than 0');
+    }
     const bonus = amount * this.depositBonusPercent;
     const total = amount + bonus;
-    return this.decoratedAccount.deposit(total);
+    this.decoratedAccount.deposit(total);
   }
 }
 

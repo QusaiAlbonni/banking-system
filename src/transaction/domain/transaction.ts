@@ -1,5 +1,24 @@
+import {
+  AccountClosedException,
+  InvalidTransactionAmountException as AccountInvalidTransactionAmountException,
+  AccountStateException,
+  AccountNotActiveException as AccountStateNotActiveException,
+  AccountStrategyException,
+  DepositNotAllowedException,
+  InvalidAccountStateTransitionException,
+  MinimumPaymentRequiredException,
+  TransactionLimitExceededException,
+  WithdrawalNotAllowedException,
+} from '@/account/application/account.exceptions';
 import { Account } from '@/account/domain/account.interface';
 import { AggregateRoot } from '@nestjs/cqrs';
+import {
+  AccountRequiredException,
+  InsufficientFundsException,
+  InvalidTransactionAmountException,
+  InvalidTransactionStateException,
+  TransactionExecutionException,
+} from '../application/transaction.exceptions';
 import { TransactionCompletedEvent } from './transaction-completed.event';
 import { TransactionFailedEvent } from './transaction-failed.event';
 import { TransactionStatus, TransactionType } from './transaction.enums';
@@ -21,89 +40,67 @@ export class Transaction extends AggregateRoot implements Operation {
 
   /**
    * Validates the transaction state before execution
+   * @throws {InvalidTransactionStateException} if transaction is not in PENDING status
+   * @throws {InvalidTransactionAmountException} if amount is invalid
    */
-  validateState(): boolean {
+  validateState(): void {
     if (this.status !== TransactionStatus.PENDING) {
-      return false;
+      throw new InvalidTransactionStateException(
+        this.status,
+        TransactionStatus.PENDING,
+      );
     }
     if (this.amount <= 0 || !Number.isFinite(this.amount)) {
-      return false;
+      throw new InvalidTransactionAmountException(this.amount);
     }
-    return true;
   }
 
   /**
    * Executes the transaction based on its type
-   * Uses Strategy Pattern via Account aggregate for deposit/withdraw operations
+   * Uses State Pattern and Strategy Pattern via Account aggregate for deposit/withdraw operations
+   * State validation is handled by Account via State Pattern
+   * Strategy validation is handled by Account strategies
+   * @throws {TransactionDomainException} if validation or execution fails
    */
   execute(fromAccount?: Account, toAccount?: Account): boolean {
-    // Validate transaction state
-    if (!this.validateState()) {
-      const reason = this.status !== TransactionStatus.PENDING
-        ? `Transaction is not in PENDING status. Current status: ${this.status}`
-        : 'Invalid transaction amount';
-      this.status = TransactionStatus.FAILED;
-      this.apply(
-        new TransactionFailedEvent(
-          this.id,
-          this.type,
-          this.amount,
-          reason,
-          this.fromAccountId,
-          this.toAccountId,
-        ),
-      );
-      return false;
-    }
-
     try {
-      let success = false;
+      // Validate transaction state
+      this.validateState();
 
       switch (this.type) {
         case TransactionType.DEPOSIT:
-          success = this.executeDeposit(toAccount);
+          this.executeDeposit(toAccount);
           break;
         case TransactionType.WITHDRAW:
-          success = this.executeWithdraw(fromAccount);
+          this.executeWithdraw(fromAccount);
           break;
         case TransactionType.TRANSFER:
-          success = this.executeTransfer(fromAccount, toAccount);
+          this.executeTransfer(fromAccount, toAccount);
           break;
         default:
-          throw new Error(`Unknown transaction type: ${this.type}`);
+          throw new TransactionExecutionException(
+            this.id,
+            `Unknown transaction type: ${this.type}`,
+          );
       }
 
-      if (success) {
-        this.status = TransactionStatus.COMPLETED;
-        this.executedAt = new Date();
-        this.apply(
-          new TransactionCompletedEvent(
-            this.id,
-            this.type,
-            this.amount,
-            this.fromAccountId,
-            this.toAccountId,
-            this.executedAt,
-          ),
-        );
-        return true;
-      } else {
-        this.status = TransactionStatus.FAILED;
-        this.apply(
-          new TransactionFailedEvent(
-            this.id,
-            this.type,
-            this.amount,
-            'Transaction execution failed',
-            this.fromAccountId,
-            this.toAccountId,
-          ),
-        );
-        return false;
-      }
+      this.status = TransactionStatus.COMPLETED;
+      this.executedAt = new Date();
+      this.apply(
+        new TransactionCompletedEvent(
+          this.id,
+          this.type,
+          this.amount,
+          this.fromAccountId,
+          this.toAccountId,
+          this.executedAt,
+        ),
+      );
+      return true;
     } catch (error) {
       this.status = TransactionStatus.FAILED;
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       this.apply(
         new TransactionFailedEvent(
           this.id,
@@ -114,43 +111,132 @@ export class Transaction extends AggregateRoot implements Operation {
           this.toAccountId,
         ),
       );
-      return false;
+      // Re-throw domain exceptions (both transaction and account domain exceptions)
+      if (
+        error instanceof InvalidTransactionStateException ||
+        error instanceof InvalidTransactionAmountException ||
+        error instanceof AccountRequiredException ||
+        error instanceof InsufficientFundsException ||
+        error instanceof TransactionExecutionException ||
+        error instanceof AccountStateException ||
+        error instanceof AccountStrategyException ||
+        error instanceof AccountStateNotActiveException ||
+        error instanceof AccountClosedException ||
+        error instanceof InvalidAccountStateTransitionException ||
+        error instanceof WithdrawalNotAllowedException ||
+        error instanceof DepositNotAllowedException ||
+        error instanceof AccountInvalidTransactionAmountException ||
+        error instanceof TransactionLimitExceededException ||
+        error instanceof MinimumPaymentRequiredException
+      ) {
+        throw error;
+      }
+      // For unexpected errors, still throw but mark as failed
+      throw error;
     }
   }
 
-  private executeDeposit(toAccount?: Account): boolean {
+  /**
+   * Executes a deposit operation
+   * State validation is handled by Account via State Pattern
+   * Strategy validation is handled by Account strategies
+   * @throws {AccountRequiredException} if target account is missing
+   * @throws {AccountStateException} if account state doesn't allow deposit
+   * @throws {AccountStrategyException} if strategy rejects the deposit
+   */
+  private executeDeposit(toAccount?: Account): void {
     if (!toAccount) {
-      throw new Error('Target account is required for deposit');
+      throw new AccountRequiredException('target');
     }
-    return toAccount.deposit(this.amount);
+    // State and strategy validation handled by Account.deposit()
+    toAccount.deposit(this.amount);
   }
 
-  private executeWithdraw(fromAccount?: Account): boolean {
+  /**
+   * Executes a withdrawal operation
+   * State validation is handled by Account via State Pattern
+   * Strategy validation is handled by Account strategies
+   * @throws {AccountRequiredException} if source account is missing
+   * @throws {InsufficientFundsException} if account has insufficient funds
+   * @throws {AccountStateException} if account state doesn't allow withdrawal
+   * @throws {AccountStrategyException} if strategy rejects the withdrawal
+   */
+  private executeWithdraw(fromAccount?: Account): void {
     if (!fromAccount) {
-      throw new Error('Source account is required for withdrawal');
+      throw new AccountRequiredException('source');
     }
-    return fromAccount.withdraw(this.amount);
+    
+    // Check balance before withdrawal
+    const balance = fromAccount.getBalance();
+    if (balance < this.amount) {
+      throw new InsufficientFundsException(
+        fromAccount.id,
+        balance,
+        this.amount,
+      );
+    }
+    
+    // State and strategy validation handled by Account.withdraw()
+    fromAccount.withdraw(this.amount);
   }
 
-  private executeTransfer(fromAccount?: Account, toAccount?: Account): boolean {
+  /**
+   * Executes a transfer operation
+   * State validation is handled by Account via State Pattern
+   * Strategy validation is handled by Account strategies
+   * @throws {AccountRequiredException} if accounts are missing
+   * @throws {InsufficientFundsException} if source account has insufficient funds
+   * @throws {AccountStateException} if account states don't allow operations
+   * @throws {AccountStrategyException} if strategies reject the operations
+   * @throws {TransactionExecutionException} if rollback fails
+   */
+  private executeTransfer(
+    fromAccount?: Account,
+    toAccount?: Account,
+  ): void {
     if (!fromAccount) {
-      throw new Error('Source account is required for transfer');
+      throw new AccountRequiredException('source');
     }
     if (!toAccount) {
-      throw new Error('Target account is required for transfer');
+      throw new AccountRequiredException('target');
     }
-    // First withdraw from source, then deposit to target
-    const withdrawSuccess = fromAccount.withdraw(this.amount);
-    if (!withdrawSuccess) {
-      return false;
+    
+    // Check balance before transfer
+    const balance = fromAccount.getBalance();
+    if (balance < this.amount) {
+      throw new InsufficientFundsException(
+        fromAccount.id,
+        balance,
+        this.amount,
+      );
     }
-    const depositSuccess = toAccount.deposit(this.amount);
-    if (!depositSuccess) {
-      // Rollback: deposit back to source account not really acceptable 
-      fromAccount.deposit(this.amount);
-      return false;
+    
+    // First withdraw from source (state and strategy validation handled by Account)
+    try {
+      fromAccount.withdraw(this.amount);
+    } catch (error) {
+      // If withdrawal fails, throw immediately (no rollback needed)
+      throw error;
     }
-    return true;
+    
+    // Then deposit to target (state and strategy validation handled by Account)
+    try {
+      toAccount.deposit(this.amount);
+    } catch (error) {
+      // If deposit fails, attempt rollback
+      try {
+        fromAccount.deposit(this.amount);
+      } catch (rollbackError) {
+        throw new TransactionExecutionException(
+          this.id,
+          'Transfer failed and rollback also failed. Manual intervention required.',
+        );
+      }
+      throw new TransactionExecutionException(
+        this.id,
+        'Deposit to target account failed. Amount has been rolled back to source account.',
+      );
+    }
   }
 }
 

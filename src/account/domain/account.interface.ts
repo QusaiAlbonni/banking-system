@@ -1,20 +1,21 @@
 import { AccountStatus } from './account-status.enum';
 import { AccountType } from './account-type.enum';
+import { AccountState } from './state/account-state.interface';
 
 export interface Withdrawable {
-  withdraw(amount: number): boolean;
+  withdraw(amount: number): void;
 }
 
 export interface Depositable {
-  deposit(amount: number): boolean;
+  deposit(amount: number): void;
 }
 
 export interface WithdrawStrategy {
-  withdraw(account: Account, amount: number): boolean;
+  withdraw(account: Account, amount: number): void;
 }
 
 export interface DepositStrategy {
-  deposit(account: Account, amount: number): boolean;
+  deposit(account: Account, amount: number): void;
 }
 
 export abstract class Account implements Withdrawable, Depositable {
@@ -28,21 +29,56 @@ export abstract class Account implements Withdrawable, Depositable {
 
   protected withdrawStrategy!: WithdrawStrategy;
   protected depositStrategy!: DepositStrategy;
+  protected currentState!: AccountState;
 
   abstract getBalance(): number;
 
-  withdraw(amount: number): boolean {
-    if (!this.withdrawStrategy) {
-      return false;
+  /**
+   * Withdraws from the account
+   * Delegates to current state which validates state and then executes strategy
+   * @throws {AccountStateException} if state doesn't allow withdrawal
+   * @throws {AccountStrategyException} if strategy rejects the operation
+   */
+  withdraw(amount: number): void {
+    if (!this.currentState) {
+      throw new Error('Account state is not initialized');
     }
-    return this.withdrawStrategy.withdraw(this, amount);
+    this.currentState.withdraw(this, amount);
   }
 
-  deposit(amount: number): boolean {
-    if (!this.depositStrategy) {
-      return false;
+  /**
+   * Deposits to the account
+   * Delegates to current state which validates state and then executes strategy
+   * @throws {AccountStateException} if state doesn't allow deposit
+   * @throws {AccountStrategyException} if strategy rejects the operation
+   */
+  deposit(amount: number): void {
+    if (!this.currentState) {
+      throw new Error('Account state is not initialized');
     }
-    return this.depositStrategy.deposit(this, amount);
+    this.currentState.deposit(this, amount);
+  }
+
+  /**
+   * Suspends the account
+   * @throws {AccountStateException} if transition is not allowed
+   */
+  suspend(): void {
+    if (!this.currentState) {
+      throw new Error('Account state is not initialized');
+    }
+    this.currentState.suspend(this);
+  }
+
+  /**
+   * Closes the account
+   * @throws {AccountStateException} if transition is not allowed
+   */
+  close(): void {
+    if (!this.currentState) {
+      throw new Error('Account state is not initialized');
+    }
+    this.currentState.close(this);
   }
 
   abstract decreaseBalance(amount: number): void;

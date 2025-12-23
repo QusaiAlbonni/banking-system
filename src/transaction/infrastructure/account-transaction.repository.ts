@@ -35,13 +35,27 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
 
     // Load accounts if they exist
     if (transaction.fromAccountId) {
-      const fromAccount = await this.accountRepository.getAccount(transaction.fromAccountId);
-      ctx.fromAccount = fromAccount || undefined;
+      const fromAccount = await this.accountRepository.getAccount(
+        transaction.fromAccountId,
+      );
+      if (!fromAccount) {
+        throw new Error(
+          `Source account ${transaction.fromAccountId} not found for transaction ${transactionId}`,
+        );
+      }
+      ctx.fromAccount = fromAccount;
     }
 
     if (transaction.toAccountId) {
-      const toAccount = await this.accountRepository.getAccount(transaction.toAccountId);
-      ctx.toAccount = toAccount || undefined;
+      const toAccount = await this.accountRepository.getAccount(
+        transaction.toAccountId,
+      );
+      if (!toAccount) {
+        throw new Error(
+          `Target account ${transaction.toAccountId} not found for transaction ${transactionId}`,
+        );
+      }
+      ctx.toAccount = toAccount;
     }
 
     return ctx;

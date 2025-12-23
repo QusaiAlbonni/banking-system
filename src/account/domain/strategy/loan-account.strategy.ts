@@ -1,6 +1,8 @@
-import { DepositStrategy, Account } from '../account.interface';
-import { AccountStatus } from '../account-status.enum';
-import { IndividualAccount } from '../account';
+import {
+  InvalidTransactionAmountException,
+  MinimumPaymentRequiredException
+} from '../../application/account.exceptions';
+import { Account, DepositStrategy } from '../account.interface';
 import { LOAN_INTEREST_RATE, LOAN_MIN_PAYMENT } from './strategy.constants';
 
 /**
@@ -13,15 +15,15 @@ export class LoanAccountStrategy implements DepositStrategy {
     private readonly minPayment: number = LOAN_MIN_PAYMENT,
   ) {}
 
-  deposit(account: Account, amount: number): boolean {
+  deposit(account: Account, amount: number): void {
     // Validate amount
     if (amount <= 0 || !Number.isFinite(amount)) {
-      return false;
+      throw new InvalidTransactionAmountException(account.id, amount, 'Amount must be greater than 0 and finite');
     }
 
     // Check minimum payment requirement
     if (amount < this.minPayment) {
-      return false;
+      throw new MinimumPaymentRequiredException(account.id, amount, this.minPayment);
     }
 
     // Loan accounts typically have negative balance (debt)
@@ -48,7 +50,6 @@ export class LoanAccountStrategy implements DepositStrategy {
     ).toString();
 
     account.updatedAt = new Date();
-    return true;
   }
 
   /**

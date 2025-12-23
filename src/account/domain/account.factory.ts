@@ -14,6 +14,7 @@ import {
 } from './strategy';
 import { AccountStatus } from './account-status.enum';
 import { AccountType } from './account-type.enum';
+import { AccountStateFactory } from './state/account-state.factory';
 
 @Injectable()
 export class AccountFactory {
@@ -38,6 +39,7 @@ export class AccountFactory {
         group.members = members;
       }
       this.applyStrategies(group, type, entity);
+      this.initializeState(group, entity.status as AccountStatus);
       return group;
     }
 
@@ -52,6 +54,7 @@ export class AccountFactory {
     individual.balance = Number(entity.balance);
     individual.metadata = { accountType: type };
     this.applyStrategies(individual, type, entity);
+    this.initializeState(individual, entity.status as AccountStatus);
     return individual;
   }
 
@@ -233,5 +236,12 @@ export class AccountFactory {
         );
         break;
     }
+  }
+
+  /**
+   * Initializes the account state based on account status
+   */
+  private initializeState(account: Account, status: AccountStatus): void {
+    (account as any).currentState = AccountStateFactory.createFromStatus(status);
   }
 }

@@ -1,3 +1,5 @@
+import { AccountClosedException, AccountNotActiveException } from '../application/account.exceptions';
+import { AccountStatus } from './account-status.enum';
 import { Account } from './account.interface';
 
 export class IndividualAccount extends Account {
@@ -37,37 +39,68 @@ export class GroupAccount extends Account {
     return this._aggregatedBalance;
   }
 
-  withdraw(amount: number): boolean {
+  withdraw(amount: number): void {
+    // Validate group account state first (State Pattern)
+    // GroupAccount doesn't use strategies on itself, so we validate state directly
+    if (!this['currentState']) {
+      throw new Error('Account state is not initialized');
+    }
+    const stateName = this['currentState'].getName();
+    
+    // Only ACTIVE state allows withdrawals
+    if (stateName !== AccountStatus.ACTIVE) {
+      if (stateName === AccountStatus.CLOSED) {
+        throw new AccountClosedException(this.id, 'withdraw');
+      }
+      throw new AccountNotActiveException(this.id, stateName, 'withdraw');
+    }
+    
+    // State validation passed, now distribute to members
+    // Each member will validate its own state and strategy
     if (amount <= 0 || this.members.length === 0) {
-      return false;
+      return;
     }
     const share = amount / this.members.length;
-    let success = true;
 
+    // Attempt withdrawals on all members
+    // If any fails, exception will propagate (rollback would be handled at transaction level)
     for (const member of this.members) {
-      const ok = member.withdraw(share);
-      if (!ok) {
-        success = false;
-        break;
-      }
+      member.withdraw(share);
     }
 
     this.getBalance();
-    return success;
   }
 
-  deposit(amount: number): boolean {
+  deposit(amount: number): void {
+    // Validate group account state first (State Pattern)
+    // GroupAccount doesn't use strategies on itself, so we validate state directly
+    if (!this['currentState']) {
+      throw new Error('Account state is not initialized');
+    }
+    const stateName = this['currentState'].getName();
+    
+    // Only ACTIVE state allows deposits
+    if (stateName !== AccountStatus.ACTIVE) {
+      if (stateName === AccountStatus.CLOSED) {
+        throw new AccountClosedException(this.id, 'deposit');
+      }
+      throw new AccountNotActiveException(this.id, stateName, 'deposit');
+    }
+    
+    // State validation passed, now distribute to members
+    // Each member will validate its own state and strategy
     if (amount <= 0 || this.members.length === 0) {
-      return false;
+      return;
     }
     const share = amount / this.members.length;
 
+    // Attempt deposits on all members
+    // If any fails, exception will propagate (rollback would be handled at transaction level)
     for (const member of this.members) {
       member.deposit(share);
     }
 
     this.getBalance();
-    return true;
   }
 
   decreaseBalance(amount: number): void {

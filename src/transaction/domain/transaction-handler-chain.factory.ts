@@ -13,8 +13,8 @@ import {
 @Injectable()
 export class TransactionHandlerChainFactory {
   createDefaultChain(): TransactionHandler {
-    const smallTransactionHandler = new SmallTransactionHandler(1000);
-    const riskCheckHandler = new RiskCheckHandler(10000, 70);
+    const smallTransactionHandler = new SmallTransactionHandler(500);
+    const riskCheckHandler = new RiskCheckHandler(1000, 70);
     const managerApprovalHandler = new ManagerApprovalHandler();
 
     // Build chain: SmallTransaction -> RiskCheck -> ManagerApproval

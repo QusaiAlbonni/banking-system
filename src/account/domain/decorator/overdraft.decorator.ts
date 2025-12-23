@@ -9,14 +9,16 @@ export class OverdraftDecorator extends AccountDecorator {
     super(account);
   }
 
-  withdraw(amount: number): boolean {
-    if (amount <= 0) return false;
+  withdraw(amount: number): void {
+    if (amount <= 0) {
+      throw new Error('Withdrawal amount must be greater than 0');
+    }
     const currentBalance = this.decoratedAccount.getBalance();
     const allowed = currentBalance + this.overdraftLimit;
     if (allowed < amount) {
-      return false;
+      throw new Error(`Withdrawal amount ${amount} exceeds available balance ${currentBalance} plus overdraft limit ${this.overdraftLimit}`);
     }
-    return this.decoratedAccount.withdraw(amount);
+    this.decoratedAccount.withdraw(amount);
   }
 }
 

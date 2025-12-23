@@ -19,7 +19,6 @@ export class TransactionFactory {
     tx.status = entity.status as TransactionStatus;
     tx.createdAt = entity.createdAt;
     tx.executedAt = entity.executedAt;
-    tx.version = entity.version;
     return tx;
   }
 
@@ -37,7 +36,6 @@ export class TransactionFactory {
     entity.toAccountId = toAccountId;
     entity.status = TransactionStatus.PENDING;
     entity.createdAt = new Date();
-    entity.version = 1;
     return this.createFromEntity(entity);
   }
 }

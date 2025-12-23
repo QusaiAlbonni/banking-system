@@ -1,10 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { AccountRepository } from '../../account/application/account.repository';
 import { TransactionHandlerChainFactory } from '../domain/transaction-handler-chain.factory';
-import { TransactionType } from '../domain/transaction.enums';
+import { TransactionStatus, TransactionType } from '../domain/transaction.enums';
 import { TransactionFactory } from '../domain/transaction.factory';
 import { TransactionalContext } from '../domain/transactional-context';
+import { AccountOwnershipValidator } from './account-ownership.validator';
 import { AccountTransactionRepository } from './account-transaction.repository';
+import {
+  TransactionDomainException,
+  UnauthorizedAccountAccessException,
+} from './transaction.exceptions';
 
 /**
  * Facade service for transfer operations
@@ -23,20 +33,43 @@ export class TransferService {
     fromId: string,
     toId: string,
     amount: number,
+    userId: number,
   ): Promise<TransactionalContext> {
+    // Validate amount before proceeding
+    if (!amount || amount <= 0 || !Number.isFinite(amount)) {
+      throw new BadRequestException(
+        'Invalid transfer amount. Amount must be greater than 0.',
+      );
+    }
+
+    // Validate accounts are different
+    if (fromId === toId) {
+      throw new BadRequestException('Cannot transfer to the same account');
+    }
+
     // Load accounts
     const fromAccount = await this.accountRepository.getAccount(fromId);
     if (!fromAccount) {
-      throw new Error(`Source account ${fromId} not found`);
+      throw new NotFoundException(`Source account ${fromId} not found`);
     }
 
     const toAccount = await this.accountRepository.getAccount(toId);
     if (!toAccount) {
-      throw new Error(`Target account ${toId} not found`);
+      throw new NotFoundException(`Target account ${toId} not found`);
     }
 
-    if (fromId === toId) {
-      throw new Error('Cannot transfer to the same account');
+    // Validate both accounts belong to the user
+    try {
+      AccountOwnershipValidator.validateOwnershipForTransfer(
+        fromAccount,
+        toAccount,
+        userId,
+      );
+    } catch (error) {
+      if (error instanceof UnauthorizedAccountAccessException) {
+        throw new ForbiddenException(error.message);
+      }
+      throw error;
     }
 
     // Create transaction
@@ -66,12 +99,19 @@ export class TransferService {
     }
 
     // Execute transaction
-    const success = transaction.execute(fromAccount, toAccount);
-
-    if (!success) {
-      // Transaction failed
-      await this.accountTransactionRepository.saveContext(ctx);
-      return ctx;
+    try {
+      const success = transaction.execute(fromAccount, toAccount);
+      if (!success) {
+        // Transaction failed
+        await this.accountTransactionRepository.saveContext(ctx);
+        return ctx;
+      }
+    } catch (error) {
+      // Re-throw domain exceptions as BadRequestException
+      if (error instanceof TransactionDomainException) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
 
     // Save accounts and transaction
@@ -87,33 +127,53 @@ export class TransferService {
     approvedBy: string,
   ): Promise<TransactionalContext> {
     // Load context
-    const ctx = await this.accountTransactionRepository.loadContext(
-      transactionId,
-    );
+    let ctx: TransactionalContext;
+    try {
+      ctx = await this.accountTransactionRepository.loadContext(transactionId);
+    } catch (error) {
+      throw new NotFoundException(
+        error instanceof Error
+          ? error.message
+          : `Transaction ${transactionId} not found`,
+      );
+    }
 
     if (!ctx.requiresManagerApproval) {
-      throw new Error('Transaction does not require approval');
+      throw new BadRequestException(
+        'Transaction does not require approval',
+      );
     }
+
+    const fromAccount = ctx.getFromAccount();
+    const toAccount = ctx.getToAccount();
+
+    if (!fromAccount) {
+      throw new NotFoundException('Source account not found in transaction context');
+    }
+    if (!toAccount) {
+      throw new NotFoundException('Target account not found in transaction context');
+    }
+
+    
 
     // Approve
     ctx.approve(approvedBy);
 
     // Execute transaction
-    const fromAccount = ctx.getFromAccount();
-    const toAccount = ctx.getToAccount();
 
-    if (!fromAccount) {
-      throw new Error('Source account not found');
-    }
-    if (!toAccount) {
-      throw new Error('Target account not found');
-    }
-
-    const success = ctx.getTransaction().execute(fromAccount, toAccount);
-
-    if (!success) {
-      await this.accountTransactionRepository.saveContext(ctx);
-      return ctx;
+    try {
+      const success = ctx.getTransaction().execute(fromAccount, toAccount);
+      if (!success) {
+        ctx.getTransaction().status = TransactionStatus.FAILED;
+        await this.accountTransactionRepository.saveContext(ctx);
+        return ctx;
+      }
+    } catch (error) {
+      // Re-throw domain exceptions as BadRequestException
+      if (error instanceof TransactionDomainException) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
 
     // Save accounts and transaction

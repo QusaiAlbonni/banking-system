@@ -37,14 +37,18 @@ export class AccountService {
     private readonly accountRepository: AccountRepository,
     @InjectRepository(AccountEntity)
     private readonly accountEntityRepo: Repository<AccountEntity>,
-  ) {}
+  ) { }
 
-  async fetchAccount(id: string){
+  async fetchAccount(id: string) {
     return await this.accountRepository.getAccount(id);
   }
 
+  async save(account: Account) {
+    return await this.accountRepository.save(account);
+  }
+
   async closeAccount(id) {
-    
+
   }
 
   async createIndividualAccount(
@@ -53,7 +57,13 @@ export class AccountService {
     const account = this.accountFactory.newIndividual(
       dto.ownerId,
       dto.primaryOwnerName,
-      dto.accountType,
+      dto.accountType, 
+      {
+        loanInterestRate: dto.loanInterestRate,
+        loanMinPayment: dto.loanMinPayment,
+        maxDeposit: dto.maxDeposit,
+        maxWithdrawal: dto.maxWithdrawal,
+      }
     );
 
     await this.accountRepository.save(account);

@@ -34,7 +34,6 @@ export class SmallTransactionHandler extends TransactionHandler {
   protected process(ctx: TransactionalContext): void {
     const transaction = ctx.getTransaction();
     const amount = transaction.amount;
-
     // Small transactions are auto-approved, no further processing needed
     if (amount <= this.smallTransactionThreshold) {
       ctx.clearManagerApprovalRequirement();

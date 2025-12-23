@@ -1,11 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { AccountRepository } from '../../account/application/account.repository';
+import { AccountService } from '@/account/application/account.service';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PaymentGateway } from '../../payment/application/payment-gateway.interface';
 import { TransactionHandlerChainFactory } from '../domain/transaction-handler-chain.factory';
 import { TransactionStatus, TransactionType } from '../domain/transaction.enums';
 import { TransactionFactory } from '../domain/transaction.factory';
 import { TransactionalContext } from '../domain/transactional-context';
+import { AccountOwnershipValidator } from './account-ownership.validator';
 import { AccountTransactionRepository } from './account-transaction.repository';
+import {
+  TransactionDomainException,
+  UnauthorizedAccountAccessException,
+} from './transaction.exceptions';
 
 /**
  * Facade service for deposit operations
@@ -14,23 +24,41 @@ import { AccountTransactionRepository } from './account-transaction.repository';
 @Injectable()
 export class DepositService {
   constructor(
-    private readonly accountRepository: AccountRepository,
+    private readonly accountService: AccountService,
     private readonly paymentGateway: PaymentGateway,
     private readonly transactionFactory: TransactionFactory,
     private readonly accountTransactionRepository: AccountTransactionRepository,
     private readonly handlerChainFactory: TransactionHandlerChainFactory,
-  ) { }
+  ) {}
+
   async processDeposit(
     accountId: string,
     amount: number,
+    userId: number,
   ): Promise<TransactionalContext> {
-    // Load account
-    const account = await this.accountRepository.getAccount(accountId);
-    if (!account) {
-      throw new Error(`Account ${accountId} not found`);
+    // Validate amount before proceeding
+    if (!amount || amount <= 0 || !Number.isFinite(amount)) {
+      throw new BadRequestException(
+        'Invalid deposit amount. Amount must be greater than 0.',
+      );
     }
 
-    // try to use the Db session on transaction begin 
+    // Load account
+    const account = await this.accountService.fetchAccount(accountId);
+    if (!account) {
+      throw new NotFoundException(`Account ${accountId} not found`);
+    }
+
+    // Validate account ownership
+    try {
+      AccountOwnershipValidator.validateOwnership(account, userId);
+    } catch (error) {
+      if (error instanceof UnauthorizedAccountAccessException) {
+        throw new ForbiddenException(error.message);
+      }
+      throw error;
+    }
+
     // Create transaction
     const transaction = this.transactionFactory.newTransaction(
       TransactionType.DEPOSIT,
@@ -59,24 +87,33 @@ export class DepositService {
     // Charge payment gateway
     const paymentSuccess = this.paymentGateway.charge(amount);
     if (!paymentSuccess) {
-      // create a failed method inside the transaction class transaction.failed()
-      ctx.getTransaction().status = TransactionStatus.FAILED;
+      transaction.status = TransactionStatus.FAILED;
       await this.accountTransactionRepository.saveContext(ctx);
       return ctx;
     }
 
     // Execute transaction
-    const success = transaction.execute(undefined, account);
-
-    if (!success) {
-      // Refund payment gateway on failure
+    try {
+      const success = transaction.execute(undefined, account);
+      if (!success) {
+        // Refund payment gateway on failure
+        this.paymentGateway.payout(amount);
+        await this.accountTransactionRepository.saveContext(ctx);
+        return ctx;
+      }
+    } catch (error) {
+      // Refund payment gateway on domain exception
       this.paymentGateway.payout(amount);
-      await this.accountTransactionRepository.saveContext(ctx);
-      return ctx;
+      
+      // Re-throw domain exceptions as BadRequestException
+      if (error instanceof TransactionDomainException) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
 
     // Save account and transaction
-    await this.accountRepository.save(account);
+    await this.accountService.save(account);
     await this.accountTransactionRepository.saveContext(ctx);
 
     return ctx;
@@ -87,12 +124,27 @@ export class DepositService {
     approvedBy: string,
   ): Promise<TransactionalContext> {
     // Load context
-    const ctx = await this.accountTransactionRepository.loadContext(
-      transactionId,
-    );
+    let ctx: TransactionalContext;
+    try {
+      ctx = await this.accountTransactionRepository.loadContext(transactionId);
+    } catch (error) {
+      throw new NotFoundException(
+        error instanceof Error
+          ? error.message
+          : `Transaction ${transactionId} not found`,
+      );
+    }
 
     if (!ctx.requiresManagerApproval) {
-      throw new Error('Transaction does not require approval');
+      throw new BadRequestException(
+        'Transaction does not require approval',
+      );
+    }
+
+    // Validate account ownership before approval
+    const account = ctx.getToAccount();
+    if (!account) {
+      throw new NotFoundException('Target account not found in transaction context');
     }
 
     // Approve
@@ -108,22 +160,29 @@ export class DepositService {
     }
 
     // Execute transaction
-    const account = ctx.getToAccount();
-    if (!account) {
-      throw new Error('Target account not found');
-    }
 
-    const success = ctx.getTransaction().execute(undefined, account);
-
-    if (!success) {
-      // Refund payment gateway on failure
+    try {
+      const success = ctx.getTransaction().execute(undefined, account);
+      if (!success) {
+        // Refund payment gateway on failure
+        this.paymentGateway.payout(amount);
+        ctx.getTransaction().status = TransactionStatus.FAILED;
+        await this.accountTransactionRepository.saveContext(ctx);
+        return ctx;
+      }
+    } catch (error) {
+      // Refund payment gateway on domain exception
       this.paymentGateway.payout(amount);
-      await this.accountTransactionRepository.saveContext(ctx);
-      return ctx;
+      
+      // Re-throw domain exceptions as BadRequestException
+      if (error instanceof TransactionDomainException) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
 
     // Save account and transaction
-    await this.accountRepository.save(account);
+    await this.accountService.save(account);
     await this.accountTransactionRepository.saveContext(ctx);
 
     return ctx;

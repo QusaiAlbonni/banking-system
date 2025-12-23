@@ -34,6 +34,7 @@ export class OrmTransactionRepository implements TransactionRepository {
       existing.fromAccountId = transaction.fromAccountId;
       existing.toAccountId = transaction.toAccountId;
       existing.executedAt = transaction.executedAt;
+      // existing.version = transaction.version;
       // Version is managed by TypeORM
       await this.repo.save(existing);
     } else {
@@ -47,7 +48,7 @@ export class OrmTransactionRepository implements TransactionRepository {
       entity.toAccountId = transaction.toAccountId;
       entity.createdAt = transaction.createdAt;
       entity.executedAt = transaction.executedAt;
-      entity.version = transaction.version;
+      // entity.version = transaction.version;
       await this.repo.save(entity);
     }
   }

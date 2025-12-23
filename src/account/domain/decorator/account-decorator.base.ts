@@ -15,12 +15,12 @@ export abstract class AccountDecorator extends Account {
     return this.decoratedAccount.getBalance();
   }
 
-  withdraw(amount: number): boolean {
-    return this.decoratedAccount.withdraw(amount);
+  withdraw(amount: number): void {
+    this.decoratedAccount.withdraw(amount);
   }
 
-  deposit(amount: number): boolean {
-    return this.decoratedAccount.deposit(amount);
+  deposit(amount: number): void {
+    this.decoratedAccount.deposit(amount);
   }
 
   decreaseBalance(amount: number): void {
@@ -28,6 +28,6 @@ export abstract class AccountDecorator extends Account {
   }
 
   increaseBalance(amount: number): void {
-    this.decoratedAccount.decreaseBalance(amount);
+    this.decoratedAccount.increaseBalance(amount);
   }
 }

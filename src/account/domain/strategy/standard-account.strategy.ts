@@ -1,15 +1,12 @@
 import {
+  InvalidTransactionAmountException,
+  TransactionLimitExceededException,
+} from '../../application/account.exceptions';
+import {
+  Account,
   DepositStrategy,
   WithdrawStrategy,
-  Account,
 } from '../account.interface';
-import { AccountStatus } from '../account-status.enum';
-import { IndividualAccount } from '../account';
-import {
-  STANDARD_MIN_BALANCE,
-  STANDARD_MAX_WITHDRAWAL,
-  STANDARD_MAX_DEPOSIT,
-} from './strategy.constants';
 
 /**
  * Standard account strategy with balance checks, transaction limits, and minimum balance enforcement
@@ -22,14 +19,14 @@ export class StandardAccountStrategy
     private readonly maxDeposit?: number,
   ) {}
 
-  withdraw(account: Account, amount: number): boolean {
+  withdraw(account: Account, amount: number): void {
     if (amount <= 0 || !Number.isFinite(amount)) {
-      return false;
+      throw new InvalidTransactionAmountException(account.id, amount, 'Amount must be greater than 0 and finite');
     }
 
     // Check transaction limit if configured
     if (this.maxWithdrawal !== undefined && amount > this.maxWithdrawal) {
-      return false;
+      throw new TransactionLimitExceededException(account.id, amount, this.maxWithdrawal, 'withdraw');
     }
 
     account.decreaseBalance(amount);
@@ -38,17 +35,17 @@ export class StandardAccountStrategy
       parseInt(account.metadata.withdrawalCount || '0', 10) + 1;
     account.metadata.withdrawalCount = withdrawalCount.toString();
     account.metadata.lastWithdrawal = new Date().toISOString();
-    return true;
   }
 
-  deposit(account: Account, amount: number): boolean {
+  deposit(account: Account, amount: number): void {
     if (amount <= 0 || !Number.isFinite(amount)) {
-      return false;
+   
+      throw new InvalidTransactionAmountException(account.id, amount, 'Amount must be greater than 0 and finite');
     }
 
     // Check transaction limit if configured
     if (this.maxDeposit !== undefined && amount > this.maxDeposit) {
-      return false;
+      throw new TransactionLimitExceededException(account.id, amount, this.maxDeposit, 'deposit');
     }
 
     account.increaseBalance(amount);
@@ -56,6 +53,5 @@ export class StandardAccountStrategy
     const depositCount = parseInt(account.metadata.depositCount || '0', 10) + 1;
     account.metadata.depositCount = depositCount.toString();
     account.metadata.lastDeposit = new Date().toISOString();
-    return true;
   }
 }

@@ -1,24 +1,25 @@
 import { AuthenticatedUser } from '@/auth/domain/authenticated-user';
-import { ActiveGuard, JwtGuard } from '@/auth/guard';
+import { ActiveGuard, JwtGuard, RolesGuard } from '@/auth/guard';
 import { GetUser } from '@/common/decorator';
 import { DepositService } from '@/transaction/application/deposit.service';
 import { TransferService } from '@/transaction/application/transfer.service';
 import { WithdrawService } from '@/transaction/application/withdraw.service';
 import {
-    BadRequestException,
-    Body,
-    Controller,
-    HttpCode,
-    HttpStatus,
-    Post,
-    UseGuards,
+  BadRequestException,
+  Body,
+  Controller,
+  ForbiddenException,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
-    ApiBearerAuth,
-    ApiBody,
-    ApiOperation,
-    ApiResponse,
-    ApiTags,
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { ApproveTransactionDto } from './dto/approve-transaction.dto';
@@ -26,6 +27,8 @@ import { DepositRequestDto } from './dto/deposit-request.dto';
 import { TransactionResponseDto } from './dto/transaction-response.dto';
 import { TransferRequestDto } from './dto/transfer-request.dto';
 import { WithdrawRequestDto } from './dto/withdraw-request.dto';
+import { Roles } from '@/auth/presenter/decorator';
+import { Role } from '@/user/domain/role';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -36,7 +39,7 @@ export class TransactionController {
     private readonly depositService: DepositService,
     private readonly withdrawService: WithdrawService,
     private readonly transferService: TransferService,
-  ) {}
+  ) { }
 
   @ApiOperation({
     summary: 'Process Deposit',
@@ -55,6 +58,10 @@ export class TransactionController {
     status: 401,
     description: 'Unauthorized',
   })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Account does not belong to the user',
+  })
   @ApiBody({ type: DepositRequestDto })
   @HttpCode(HttpStatus.OK)
   @Post('deposit')
@@ -66,10 +73,14 @@ export class TransactionController {
       const ctx = await this.depositService.processDeposit(
         dto.accountId,
         dto.amount,
+        user.id,
       );
 
       return this.mapToResponse(ctx);
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Failed to process deposit',
       );
@@ -93,6 +104,10 @@ export class TransactionController {
     status: 401,
     description: 'Unauthorized',
   })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Account does not belong to the user',
+  })
   @ApiBody({ type: WithdrawRequestDto })
   @HttpCode(HttpStatus.OK)
   @Post('withdraw')
@@ -104,10 +119,14 @@ export class TransactionController {
       const ctx = await this.withdrawService.processWithdraw(
         dto.accountId,
         dto.amount,
+        user.id,
       );
 
       return this.mapToResponse(ctx);
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Failed to process withdrawal',
       );
@@ -131,6 +150,10 @@ export class TransactionController {
     status: 401,
     description: 'Unauthorized',
   })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - One or both accounts do not belong to the user',
+  })
   @ApiBody({ type: TransferRequestDto })
   @HttpCode(HttpStatus.OK)
   @Post('transfer')
@@ -143,10 +166,14 @@ export class TransactionController {
         dto.fromAccountId,
         dto.toAccountId,
         dto.amount,
+        user.id,
       );
 
       return this.mapToResponse(ctx);
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Failed to process transfer',
       );
@@ -170,8 +197,14 @@ export class TransactionController {
     status: 401,
     description: 'Unauthorized',
   })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Account does not belong to the user',
+  })
   @ApiBody({ type: ApproveTransactionDto })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(Role.MANAGER)
   @Post('deposit/approve')
   async approveDeposit(
     @Body() dto: ApproveTransactionDto,
@@ -185,6 +218,9 @@ export class TransactionController {
 
       return this.mapToResponse(ctx);
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Failed to approve deposit',
       );
@@ -208,8 +244,14 @@ export class TransactionController {
     status: 401,
     description: 'Unauthorized',
   })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Account does not belong to the user',
+  })
   @ApiBody({ type: ApproveTransactionDto })
   @HttpCode(HttpStatus.OK)
+  @UseGuards(RolesGuard)
+  @Roles(Role.MANAGER)
   @Post('withdraw/approve')
   async approveWithdraw(
     @Body() dto: ApproveTransactionDto,
@@ -223,6 +265,9 @@ export class TransactionController {
 
       return this.mapToResponse(ctx);
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Failed to approve withdrawal',
       );
@@ -246,6 +291,12 @@ export class TransactionController {
     status: 401,
     description: 'Unauthorized',
   })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - One or both accounts do not belong to the user',
+  })
+  @UseGuards(RolesGuard)
+  @Roles(Role.MANAGER)
   @ApiBody({ type: ApproveTransactionDto })
   @HttpCode(HttpStatus.OK)
   @Post('transfer/approve')
@@ -261,6 +312,9 @@ export class TransactionController {
 
       return this.mapToResponse(ctx);
     } catch (error) {
+      if (error instanceof ForbiddenException) {
+        throw error;
+      }
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Failed to approve transfer',
       );

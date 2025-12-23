@@ -10,10 +10,12 @@ export class InsuranceDecorator extends AccountDecorator {
     this.metadata = { ...account.metadata, insured: 'true' };
   }
 
-  withdraw(amount: number): boolean {
-    if (amount <= 0) return false;
+  withdraw(amount: number): void {
+    if (amount <= 0) {
+      throw new Error('Withdrawal amount must be greater than 0');
+    }
     const withFee = amount * (1 + this.feePercent);
-    return this.decoratedAccount.withdraw(withFee);
+    this.decoratedAccount.withdraw(withFee);
   }
 }
 
