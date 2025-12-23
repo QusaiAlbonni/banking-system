@@ -1,11 +1,12 @@
-import { Controller, Get, Render } from "@nestjs/common";
+import { Controller, Get, Post, Render } from "@nestjs/common";
 
-@Controller('')
+@Controller()
 export class AuthViewsController {
 
   @Render('login.njk')
   @Get('login')
-  async login(){
+  async getLogin(){}
 
-  }
+  @Post('login')
+  async login(){}
 }

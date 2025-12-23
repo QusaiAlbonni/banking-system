@@ -36,7 +36,7 @@ export class SuspendedState implements AccountState {
   close(account: Account): void {
     // Suspended accounts can be closed
     account.status = AccountStatus.CLOSED;
-    account['currentState'] = new ClosedState();
+    account.currentState = new ClosedState();
     account.updatedAt = new Date();
   }
 }

@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { AccountRepository } from '../../account/application/account.repository';
 import { TransactionHandlerChainFactory } from '../domain/transaction-handler-chain.factory';
-import { TransactionStatus, TransactionType } from '../domain/transaction.enums';
+import {
+  TransactionStatus,
+  TransactionType,
+} from '../domain/transaction.enums';
 import { TransactionFactory } from '../domain/transaction.factory';
 import { TransactionalContext } from '../domain/transactional-context';
 import { AccountOwnershipValidator } from './account-ownership.validator';
@@ -15,6 +18,7 @@ import {
   TransactionDomainException,
   UnauthorizedAccountAccessException,
 } from './transaction.exceptions';
+import { EventPublisher } from '@nestjs/cqrs';
 
 /**
  * Facade service for transfer operations
@@ -27,6 +31,7 @@ export class TransferService {
     private readonly transactionFactory: TransactionFactory,
     private readonly accountTransactionRepository: AccountTransactionRepository,
     private readonly handlerChainFactory: TransactionHandlerChainFactory,
+    private readonly eventPublisher: EventPublisher,
   ) {}
 
   async requestTransfer(
@@ -100,10 +105,12 @@ export class TransferService {
 
     // Execute transaction
     try {
+      this.eventPublisher.mergeObjectContext(transaction);
       const success = transaction.execute(fromAccount, toAccount);
       if (!success) {
         // Transaction failed
         await this.accountTransactionRepository.saveContext(ctx);
+        transaction.commit();
         return ctx;
       }
     } catch (error) {
@@ -115,9 +122,8 @@ export class TransferService {
     }
 
     // Save accounts and transaction
-    await this.accountRepository.save(fromAccount);
-    await this.accountRepository.save(toAccount);
     await this.accountTransactionRepository.saveContext(ctx);
+    transaction.commit();
 
     return ctx;
   }
@@ -139,33 +145,35 @@ export class TransferService {
     }
 
     if (!ctx.requiresManagerApproval) {
-      throw new BadRequestException(
-        'Transaction does not require approval',
-      );
+      throw new BadRequestException('Transaction does not require approval');
     }
 
     const fromAccount = ctx.getFromAccount();
     const toAccount = ctx.getToAccount();
 
     if (!fromAccount) {
-      throw new NotFoundException('Source account not found in transaction context');
+      throw new NotFoundException(
+        'Source account not found in transaction context',
+      );
     }
     if (!toAccount) {
-      throw new NotFoundException('Target account not found in transaction context');
+      throw new NotFoundException(
+        'Target account not found in transaction context',
+      );
     }
-
-    
 
     // Approve
     ctx.approve(approvedBy);
 
     // Execute transaction
-
+    const transaction = ctx.getTransaction();
     try {
-      const success = ctx.getTransaction().execute(fromAccount, toAccount);
+      this.eventPublisher.mergeObjectContext(transaction);
+      const success = transaction.execute(fromAccount, toAccount);
       if (!success) {
         ctx.getTransaction().status = TransactionStatus.FAILED;
         await this.accountTransactionRepository.saveContext(ctx);
+        transaction.commit();
         return ctx;
       }
     } catch (error) {
@@ -177,9 +185,8 @@ export class TransferService {
     }
 
     // Save accounts and transaction
-    await this.accountRepository.save(fromAccount);
-    await this.accountRepository.save(toAccount);
     await this.accountTransactionRepository.saveContext(ctx);
+    transaction.commit();
 
     return ctx;
   }

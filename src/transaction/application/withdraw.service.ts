@@ -15,6 +15,7 @@ import {
   TransactionDomainException,
   UnauthorizedAccountAccessException,
 } from './transaction.exceptions';
+import { EventPublisher } from '@nestjs/cqrs';
 
 /**
  * Facade service for withdrawal operations
@@ -27,6 +28,7 @@ export class WithdrawService {
     private readonly transactionFactory: TransactionFactory,
     private readonly accountTransactionRepository: AccountTransactionRepository,
     private readonly handlerChainFactory: TransactionHandlerChainFactory,
+    private readonly publisher: EventPublisher
   ) {}
 
   async processWithdraw(
@@ -83,12 +85,14 @@ export class WithdrawService {
       return ctx;
     }
 
+    this.publisher.mergeObjectContext(transaction);
     // Execute transaction
     try {
       const success = transaction.execute(account,undefined);
       if (!success) {
         // Transaction failed
         await this.accountTransactionRepository.saveContext(ctx);
+        transaction.commit()
         return ctx;
       }
     } catch (error) {
@@ -99,9 +103,8 @@ export class WithdrawService {
       throw error;
     }
 
-    // Save account and transaction
-    await this.accountRepository.save(account);
     await this.accountTransactionRepository.saveContext(ctx);
+    transaction.commit()
 
     return ctx;
   }
@@ -139,12 +142,14 @@ export class WithdrawService {
     ctx.approve(approvedBy);
 
     // Execute transaction
-
+    const transaction = ctx.getTransaction();
+    this.publisher.mergeObjectContext(transaction);
     try {
-      const success = ctx.getTransaction().execute(account,undefined);
+      const success = transaction.execute(account,undefined);
       if (!success) {
         ctx.getTransaction().status = TransactionStatus.FAILED;
         await this.accountTransactionRepository.saveContext(ctx);
+        transaction.commit();
         return ctx;
       }
     } catch (error) {
@@ -156,8 +161,8 @@ export class WithdrawService {
     }
 
     // Save account and transaction
-    await this.accountRepository.save(account);
     await this.accountTransactionRepository.saveContext(ctx);
+    transaction.commit();
 
     return ctx;
   }

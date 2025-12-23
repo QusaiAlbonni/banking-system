@@ -19,6 +19,7 @@ import { PaymentModule } from './payment/payment.module';
 import { LoggingModule } from './logging/logging.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { MessagingModule } from './messaging/messaging.module';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
@@ -56,7 +57,8 @@ import { MessagingModule } from './messaging/messaging.module';
     PaymentModule,
     LoggingModule,
     NotificationsModule,
-    MessagingModule
+    MessagingModule,
+    CqrsModule.forRoot()
   ],
   controllers: [],
   providers: [

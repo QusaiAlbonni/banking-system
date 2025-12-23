@@ -30,7 +30,7 @@ export abstract class Account implements Withdrawable, Depositable {
 
   protected withdrawStrategy!: WithdrawStrategy;
   protected depositStrategy!: DepositStrategy;
-  protected currentState!: AccountState;
+  currentState!: AccountState;
 
   protected interestStrategy!: InterestStrategy;
 

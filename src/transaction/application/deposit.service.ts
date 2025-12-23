@@ -16,6 +16,7 @@ import {
   TransactionDomainException,
   UnauthorizedAccountAccessException,
 } from './transaction.exceptions';
+import { EventPublisher } from '@nestjs/cqrs';
 
 /**
  * Facade service for deposit operations
@@ -29,6 +30,7 @@ export class DepositService {
     private readonly transactionFactory: TransactionFactory,
     private readonly accountTransactionRepository: AccountTransactionRepository,
     private readonly handlerChainFactory: TransactionHandlerChainFactory,
+    private readonly publisher: EventPublisher
   ) {}
 
   async processDeposit(
@@ -93,12 +95,14 @@ export class DepositService {
     }
 
     // Execute transaction
+    this.publisher.mergeObjectContext(transaction);
     try {
       const success = transaction.execute(undefined, account);
       if (!success) {
         // Refund payment gateway on failure
         this.paymentGateway.payout(amount);
         await this.accountTransactionRepository.saveContext(ctx);
+        transaction.commit();
         return ctx;
       }
     } catch (error) {
@@ -113,8 +117,8 @@ export class DepositService {
     }
 
     // Save account and transaction
-    await this.accountService.save(account);
     await this.accountTransactionRepository.saveContext(ctx);
+    transaction.commit();
 
     return ctx;
   }
@@ -160,14 +164,15 @@ export class DepositService {
     }
 
     // Execute transaction
-
+    const transaction = ctx.getTransaction()
     try {
-      const success = ctx.getTransaction().execute(undefined, account);
+      const success = transaction.execute(undefined, account);
       if (!success) {
         // Refund payment gateway on failure
         this.paymentGateway.payout(amount);
         ctx.getTransaction().status = TransactionStatus.FAILED;
         await this.accountTransactionRepository.saveContext(ctx);
+        transaction.commit();
         return ctx;
       }
     } catch (error) {
@@ -182,8 +187,8 @@ export class DepositService {
     }
 
     // Save account and transaction
-    await this.accountService.save(account);
     await this.accountTransactionRepository.saveContext(ctx);
+    transaction.commit();
 
     return ctx;
   }

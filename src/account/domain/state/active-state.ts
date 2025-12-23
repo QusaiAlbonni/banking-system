@@ -15,28 +15,22 @@ export class ActiveState implements AccountState {
   }
 
   deposit(account: Account, amount: number): void {
-    // Active state allows deposits - delegate to strategy
-    // State validation passed, strategy will handle business rules and throw exceptions if violated
-    account['depositStrategy'].deposit(account, amount); 
+    account.deposit(amount); 
   }
 
   withdraw(account: Account, amount: number): void {
-    // Active state allows withdrawals - delegate to strategy
-    // State validation passed, strategy will handle business rules and throw exceptions if violated
-    account['withdrawStrategy'].withdraw(account, amount);
+    account.withdraw(amount);
   }
 
   suspend(account: Account): void {
-    // Active accounts can be suspended
     account.status = AccountStatus.SUSPENDED;
-    account['currentState'] = new SuspendedState();
+    account.currentState = new SuspendedState();
     account.updatedAt = new Date();
   }
 
   close(account: Account): void {
-    // Active accounts can be closed
     account.status = AccountStatus.CLOSED;
-    account['currentState'] = new ClosedState();
+    account.currentState = new ClosedState();
     account.updatedAt = new Date();
   }
 }

@@ -9,7 +9,7 @@ import {
 import { addCorsPolicy } from './cors';
 import helmet from 'helmet';
 import { buildSwaggerDocument } from './swagger';
-// import * as nunjucks from 'nunjucks';
+import * as nunjucks from 'nunjucks';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 
@@ -22,12 +22,12 @@ async function bootstrap() {
     }),
   );
   addCorsPolicy(app);
-  // nunjucks.configure('views', {
-  //   autoescape: true,
-  //   express: app,
-  //   watch: true,
-  // });
-  // app.setViewEngine('njk');
+  nunjucks.configure('views', {
+    autoescape: true,
+    express: app,
+    watch: true,
+  });
+  app.setViewEngine('njk');
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.use(I18nMiddleware);
   app.use(helmet());

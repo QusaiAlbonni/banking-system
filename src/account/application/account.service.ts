@@ -48,9 +48,6 @@ export class AccountService {
     return await this.accountRepository.save(account);
   }
 
-  async closeAccount(id) {
-
-  }
 
   async createIndividualAccount(
     dto: CreateIndividualAccountDto,

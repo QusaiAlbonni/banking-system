@@ -21,6 +21,7 @@ import {
 } from './infrastructure/transaction.repository';
 import { TransactionController } from './presenter/http/transaction.controller';
 import { TransactionHistoryController } from './presenter/http/transaction-history.controller';
+import { NotificationsModule } from '@/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { TransactionHistoryController } from './presenter/http/transaction-histo
     PaymentModule,
     UserModule,
     TypeOrmModule.forFeature([TransactionEntity, LedgerEntryEntity]),
+    NotificationsModule
   ],
   controllers: [
     TransactionController,

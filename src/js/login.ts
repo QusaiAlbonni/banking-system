@@ -1,7 +1,7 @@
 import { AlpineComponent } from "alpinejs";
 
 export default function loginForm(): AlpineComponent<any> {
-  return {
+  const component: AlpineComponent<any> =  {
     email: '',
     password: '',
     showPassword: false,
@@ -54,4 +54,6 @@ export default function loginForm(): AlpineComponent<any> {
       this.$refs.form.submit();
     }
   };
+
+  return component;
 }
