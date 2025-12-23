@@ -1,8 +1,6 @@
 import { AccountStatus } from './account-status.enum';
 import { AccountType } from './account-type.enum';
-import { DepositStrategy } from './strategy/deposit.strategy';
 import { InterestStrategy } from './strategy/interest.strategy';
-import { WithdrawStrategy } from './strategy/withdraw.strategy';
 import { AccountState } from './state/account-state.interface';
 
 export interface Withdrawable {

@@ -2,7 +2,6 @@ import {
   InvalidTransactionAmountException,
   MinimumPaymentRequiredException
 } from '../../application/account.exceptions';
-import { Account, DepositStrategy } from '../account.interface';
 import { LOAN_INTEREST_RATE, LOAN_MIN_PAYMENT } from './strategy.constants';
 import { DepositStrategy } from './deposit.strategy';
 import { Account } from '../account.interface';
