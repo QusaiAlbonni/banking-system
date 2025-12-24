@@ -14,6 +14,7 @@ export function typeOrmConfiguration(
     extraOptions = {
       migrations: ['./migrations/*.ts'],
       migrationsRun: true,
+      
     };
   }
   return {
@@ -21,6 +22,7 @@ export function typeOrmConfiguration(
     url: configService.get<string>('DATABASE_URL'),
     autoLoadEntities: true,
     entities: [__dirname + '/../**/*.entity.{js,ts}'],
+    poolSize: 10,
     ...extraOptions,
   };
 }
