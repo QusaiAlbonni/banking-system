@@ -1,4 +1,5 @@
 import {
+  DepositNotAllowedException,
   InvalidTransactionAmountException,
   MinimumPaymentRequiredException
 } from '../../application/account.exceptions';
@@ -16,15 +17,24 @@ export class LoanAccountStrategy implements DepositStrategy {
     private readonly minPayment: number = LOAN_MIN_PAYMENT,
   ) {}
 
-  deposit(account: Account, amount: number): boolean {
+  deposit(account: Account, amount: number): void {
     // Basic validation
-    if (amount <= 0 || !Number.isFinite(amount)) return false;
-    if (amount < this.minPayment) return false; // require borrower to meet min payment
+    if (amount <= 0 || !Number.isFinite(amount)) {
+      throw new InvalidTransactionAmountException(account.id, amount, 'Amount must be greater than 0 and finite');
+    }
+    
+    if (amount < this.minPayment) {
+      throw new MinimumPaymentRequiredException(account.id, amount, this.minPayment);
+    }
 
     const balanceBefore = account.getBalance(); // negative = debt
     if (balanceBefore >= 0) {
-      // No outstanding loan (or already positive); policy: reject or accept as normal deposit.
-      return false;
+      // No outstanding loan (or already positive); policy: reject deposits to paid-off loans
+      throw new DepositNotAllowedException(
+        account.id,
+        account.type,
+        'Loan account has no outstanding balance. Deposits are only allowed for loan repayments.'
+      );
     }
 
     const outstanding = Math.abs(balanceBefore);
@@ -61,7 +71,6 @@ export class LoanAccountStrategy implements DepositStrategy {
     account.metadata.lastPayment = new Date().toISOString();
 
     account.updatedAt = new Date();
-    return true;
   }
 
   getRemainingBalance(account: Account): number {

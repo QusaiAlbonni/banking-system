@@ -17,6 +17,7 @@ import {
   InsufficientFundsException,
   InvalidTransactionAmountException,
   InvalidTransactionStateException,
+  SameAccountTransferException,
   TransactionExecutionException,
 } from '../application/transaction.exceptions';
 import { TransactionCompletedEvent } from './transaction-completed.event';
@@ -127,7 +128,8 @@ export class Transaction extends AggregateRoot implements Operation {
         error instanceof DepositNotAllowedException ||
         error instanceof AccountInvalidTransactionAmountException ||
         error instanceof TransactionLimitExceededException ||
-        error instanceof MinimumPaymentRequiredException
+        error instanceof MinimumPaymentRequiredException ||
+        error instanceof SameAccountTransferException
       ) {
         throw error;
       }
@@ -155,9 +157,9 @@ export class Transaction extends AggregateRoot implements Operation {
   /**
    * Executes a withdrawal operation
    * State validation is handled by Account via State Pattern
-   * Strategy validation is handled by Account strategies
+   * Strategy validation (including balance checks) is handled by Account strategies
    * @throws {AccountRequiredException} if source account is missing
-   * @throws {InsufficientFundsException} if account has insufficient funds
+   * @throws {InsufficientFundsException} if account has insufficient funds (from strategy)
    * @throws {AccountStateException} if account state doesn't allow withdrawal
    * @throws {AccountStrategyException} if strategy rejects the withdrawal
    */
@@ -166,22 +168,12 @@ export class Transaction extends AggregateRoot implements Operation {
       throw new AccountRequiredException('source');
     }
     
-    // Check balance before withdrawal
-    const balance = fromAccount.getBalance();
-    if (balance < this.amount) {
-      throw new InsufficientFundsException(
-        fromAccount.id,
-        balance,
-        this.amount,
-      );
-    }
-    
-    // State and strategy validation handled by Account.withdraw()
+    // State and strategy validation (including balance checks) handled by Account.withdraw()
     fromAccount.withdraw(this.amount);
   }
 
   /**
-   * Executes a transfer operation
+   * Executes a transfer operation using a compensating transaction pattern
    * State validation is handled by Account via State Pattern
    * Strategy validation is handled by Account strategies
    * @throws {AccountRequiredException} if accounts are missing
@@ -201,41 +193,52 @@ export class Transaction extends AggregateRoot implements Operation {
       throw new AccountRequiredException('target');
     }
     
-    // Check balance before transfer
-    const balance = fromAccount.getBalance();
-    if (balance < this.amount) {
-      throw new InsufficientFundsException(
-        fromAccount.id,
-        balance,
-        this.amount,
-      );
+    // Enforce transfer invariant: fromAccount ≠ toAccount
+    if (fromAccount.id === toAccount.id) {
+      throw new SameAccountTransferException(fromAccount.id);
     }
     
-    // First withdraw from source (state and strategy validation handled by Account)
+    // Track execution state for compensating transaction
+    let withdrawalCompleted = false;
+    
     try {
+      // Step 1: Withdraw from source (state and strategy validation, including balance checks, handled by Account)
       fromAccount.withdraw(this.amount);
-    } catch (error) {
-      // If withdrawal fails, throw immediately (no rollback needed)
-      throw error;
-    }
-    
-    // Then deposit to target (state and strategy validation handled by Account)
-    try {
+      withdrawalCompleted = true;
+      
+      // Step 2: Deposit to target (state and strategy validation handled by Account)
       toAccount.deposit(this.amount);
+      
+      // Transfer completed successfully
     } catch (error) {
-      // If deposit fails, attempt rollback
-      try {
-        fromAccount.deposit(this.amount);
-      } catch (rollbackError) {
+      // Compensating transaction: rollback withdrawal if it was completed
+      if (withdrawalCompleted) {
+        try {
+          // Compensate: deposit back to source account
+          fromAccount.deposit(this.amount);
+        } catch (compensationError) {
+          // Compensation failed - this is a critical error requiring manual intervention
+          const originalErrorMsg = error instanceof Error ? error.message : 'Unknown error';
+          const compensationErrorMsg = compensationError instanceof Error ? compensationError.message : 'Unknown error';
+          throw new TransactionExecutionException(
+            this.id,
+            `Transfer failed after withdrawal: ${originalErrorMsg}. ` +
+            `Compensation (rollback) also failed: ${compensationErrorMsg}. ` +
+            `Manual intervention required. Source account ${fromAccount.id} may have incorrect balance.`,
+          );
+        }
+        
+        // Compensation succeeded, but original operation failed
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
         throw new TransactionExecutionException(
           this.id,
-          'Transfer failed and rollback also failed. Manual intervention required.',
+          `Deposit to target account ${toAccount.id} failed: ${errorMsg}. ` +
+          `Amount has been compensated (rolled back) to source account ${fromAccount.id}.`,
         );
       }
-      throw new TransactionExecutionException(
-        this.id,
-        'Deposit to target account failed. Amount has been rolled back to source account.',
-      );
+      
+      // Withdrawal failed before completion - no compensation needed, just re-throw
+      throw error;
     }
   }
 }

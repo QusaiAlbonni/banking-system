@@ -2,6 +2,7 @@ import {
   InvalidTransactionAmountException,
   TransactionLimitExceededException,
 } from '../../application/account.exceptions';
+import { InsufficientFundsException } from '@/transaction/application/transaction.exceptions';
 import {
   Account,
 } from '../account.interface';
@@ -28,6 +29,16 @@ export class StandardAccountStrategy
     // Check transaction limit if configured
     if (this.maxWithdrawal !== undefined && amount > this.maxWithdrawal) {
       throw new TransactionLimitExceededException(account.id, amount, this.maxWithdrawal, 'withdraw');
+    }
+
+    // Check balance before withdrawal (invariant enforcement)
+    const balance = account.getBalance();
+    if (balance < amount) {
+      throw new InsufficientFundsException(
+        account.id,
+        balance,
+        amount,
+      );
     }
 
     account.decreaseBalance(amount);

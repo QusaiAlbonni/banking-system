@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { AccountRepository } from '../../account/application/account.repository';
 import { AccountFactory } from '../../account/domain/account.factory';
+import { AccountEntity } from '../../account/infrastructure/orm/entities/account.entity';
 import { AccountTransactionRepository, TransactionRepository } from '../application/account-transaction.repository';
 import { TransactionStatus, TransactionType } from '../domain/transaction.enums';
 import { TransactionFactory } from '../domain/transaction.factory';
@@ -21,7 +22,7 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
     @InjectRepository(LedgerEntryEntity)
     private readonly ledgerRepo: Repository<LedgerEntryEntity>,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async loadContext(transactionId: string): Promise<TransactionalContext> {
     const ctx = new TransactionalContext();
@@ -29,7 +30,7 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
     // Load transaction
     const transaction = await this.transactionRepository.getTransaction(transactionId);
     if (!transaction) {
-      throw new Error(`Transaction ${transactionId} not found`);
+      throw new NotFoundException(`Transaction ${transactionId} not found`);
     }
     ctx.transaction = transaction;
 
@@ -39,7 +40,7 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
         transaction.fromAccountId,
       );
       if (!fromAccount) {
-        throw new Error(
+        throw new NotFoundException(
           `Source account ${transaction.fromAccountId} not found for transaction ${transactionId}`,
         );
       }
@@ -51,7 +52,7 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
         transaction.toAccountId,
       );
       if (!toAccount) {
-        throw new Error(
+        throw new NotFoundException(
           `Target account ${transaction.toAccountId} not found for transaction ${transactionId}`,
         );
       }
@@ -69,15 +70,22 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
     try {
       const transaction = ctx.getTransaction();
 
-      // Save transaction
-      await this.transactionRepository.save(transaction);
+      // Convert domain objects to entities
+      const transactionEntity = this.transactionFactory.toEntity(transaction);
 
-      // Save accounts if they exist
+      // Save transaction using queryRunner manager to ensure it's in the same transaction
+
+      await queryRunner.manager.save(TransactionEntity, transactionEntity);
+
+
+      // Save accounts using queryRunner manager to ensure they're in the same transaction
       if (ctx.fromAccount) {
-        await this.accountRepository.save(ctx.fromAccount);
+        const fromAccountEntity = this.accountFactory.toEntity(ctx.fromAccount);
+        await queryRunner.manager.save(AccountEntity, fromAccountEntity);
       }
       if (ctx.toAccount) {
-        await this.accountRepository.save(ctx.toAccount);
+        const toAccountEntity = this.accountFactory.toEntity(ctx.toAccount);
+        await queryRunner.manager.save(AccountEntity, toAccountEntity);
       }
 
       // Create ledger entries for transaction history
@@ -104,8 +112,12 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
 
     // Create ledger entry for source account (withdraw/transfer)
     if (fromAccount && (transaction.type === TransactionType.WITHDRAW || transaction.type === TransactionType.TRANSFER)) {
-      const balanceBefore = fromAccount.getBalance() + transaction.amount; // Balance before transaction
+      // Use stored balanceBefore if available (set before transaction execution)
+      // Otherwise calculate: balanceAfter is current balance, balanceBefore = balanceAfter + amount
       const balanceAfter = fromAccount.getBalance();
+      const balanceBefore = ctx.fromAccountBalanceBefore !== undefined
+        ? ctx.fromAccountBalanceBefore
+        : balanceAfter + transaction.amount; // For withdrawal: balance before = balance after + amount withdrawn
 
       const fromEntry = new LedgerEntryEntity();
       fromEntry.transactionId = transaction.id;
@@ -121,8 +133,12 @@ export class OrmAccountTransactionRepository implements AccountTransactionReposi
 
     // Create ledger entry for target account (deposit/transfer)
     if (toAccount && (transaction.type === TransactionType.DEPOSIT || transaction.type === TransactionType.TRANSFER)) {
-      const balanceBefore = toAccount.getBalance() - transaction.amount; // Balance before transaction
+      // Use stored balanceBefore if available (set before transaction execution)
+      // Otherwise calculate: balanceAfter is current balance, balanceBefore = balanceAfter - amount
       const balanceAfter = toAccount.getBalance();
+      const balanceBefore = ctx.toAccountBalanceBefore !== undefined
+        ? ctx.toAccountBalanceBefore
+        : balanceAfter - transaction.amount; // For deposit: balance before = balance after - amount deposited
 
       const toEntry = new LedgerEntryEntity();
       toEntry.transactionId = transaction.id;

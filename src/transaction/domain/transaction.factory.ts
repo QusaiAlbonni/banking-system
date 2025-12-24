@@ -38,4 +38,17 @@ export class TransactionFactory {
     entity.createdAt = new Date();
     return this.createFromEntity(entity);
   }
+
+  toEntity(domain: Transaction): TransactionEntity {
+    const entity = new TransactionEntity();
+    entity.id = domain.id;
+    entity.fromAccountId = domain.fromAccountId;
+    entity.toAccountId = domain.toAccountId;
+    entity.type = domain.type;
+    entity.amount = domain.amount;
+    entity.status = domain.status;
+    entity.createdAt = domain.createdAt;
+    entity.executedAt = domain.executedAt;
+    return entity;
+  }
 }

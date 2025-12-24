@@ -15,23 +15,21 @@ export class ActiveState implements AccountState {
   }
 
   deposit(account: Account, amount: number): void {
-    account.deposit(amount); 
+    // ActiveState allows operations, delegate directly to strategy
+    account.getDepositStrategy().deposit(account, amount);
   }
 
   withdraw(account: Account, amount: number): void {
-    account.withdraw(amount);
+    // ActiveState allows operations, delegate directly to strategy
+    account.getWithdrawStrategy().withdraw(account, amount);
   }
 
   suspend(account: Account): void {
-    account.status = AccountStatus.SUSPENDED;
-    account.currentState = new SuspendedState();
-    account.updatedAt = new Date();
+    account.transitionToSuspended(new SuspendedState());
   }
 
   close(account: Account): void {
-    account.status = AccountStatus.CLOSED;
-    account.currentState = new ClosedState();
-    account.updatedAt = new Date();
+    account.transitionToClosed(new ClosedState());
   }
 }
 

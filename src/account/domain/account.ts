@@ -62,10 +62,33 @@ export class GroupAccount extends Account {
     }
     const share = amount / this.members.length;
 
-    // Attempt withdrawals on all members
-    // If any fails, exception will propagate (rollback would be handled at transaction level)
-    for (const member of this.members) {
-      member.withdraw(share);
+    // Track successful withdrawals for rollback on failure
+    const successfulWithdrawals: Account[] = [];
+    
+    try {
+      // Attempt withdrawals on all members
+      for (const member of this.members) {
+        member.withdraw(share);
+        successfulWithdrawals.push(member);
+      }
+    } catch (error) {
+      // Rollback successful withdrawals if any member failed
+      if (successfulWithdrawals.length > 0) {
+        try {
+          for (const member of successfulWithdrawals) {
+            member.deposit(share);
+          }
+        } catch (rollbackError) {
+          // If rollback fails, throw a composite error
+          throw new Error(
+            `GroupAccount withdrawal failed: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
+            `Rollback also failed for ${successfulWithdrawals.length} member(s): ${rollbackError instanceof Error ? rollbackError.message : 'Unknown error'}. ` +
+            `Manual intervention required for account ${this.id}.`
+          );
+        }
+      }
+      // Re-throw the original error after rollback attempt
+      throw error;
     }
 
     this.getBalance();
@@ -94,10 +117,33 @@ export class GroupAccount extends Account {
     }
     const share = amount / this.members.length;
 
-    // Attempt deposits on all members
-    // If any fails, exception will propagate (rollback would be handled at transaction level)
-    for (const member of this.members) {
-      member.deposit(share);
+    // Track successful deposits for rollback on failure
+    const successfulDeposits: Account[] = [];
+    
+    try {
+      // Attempt deposits on all members
+      for (const member of this.members) {
+        member.deposit(share);
+        successfulDeposits.push(member);
+      }
+    } catch (error) {
+      // Rollback successful deposits if any member failed
+      if (successfulDeposits.length > 0) {
+        try {
+          for (const member of successfulDeposits) {
+            member.withdraw(share);
+          }
+        } catch (rollbackError) {
+          // If rollback fails, throw a composite error
+          throw new Error(
+            `GroupAccount deposit failed: ${error instanceof Error ? error.message : 'Unknown error'}. ` +
+            `Rollback also failed for ${successfulDeposits.length} member(s): ${rollbackError instanceof Error ? rollbackError.message : 'Unknown error'}. ` +
+            `Manual intervention required for account ${this.id}.`
+          );
+        }
+      }
+      // Re-throw the original error after rollback attempt
+      throw error;
     }
 
     this.getBalance();

@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventPublisher } from '@nestjs/cqrs';
 import { AccountRepository } from '../../account/application/account.repository';
 import { TransactionHandlerChainFactory } from '../domain/transaction-handler-chain.factory';
 import {
@@ -18,7 +19,6 @@ import {
   TransactionDomainException,
   UnauthorizedAccountAccessException,
 } from './transaction.exceptions';
-import { EventPublisher } from '@nestjs/cqrs';
 
 /**
  * Facade service for transfer operations
@@ -47,10 +47,7 @@ export class TransferService {
       );
     }
 
-    // Validate accounts are different
-    if (fromId === toId) {
-      throw new BadRequestException('Cannot transfer to the same account');
-    }
+    // Note: Same account validation is now enforced in Transaction aggregate
 
     // Load accounts
     const fromAccount = await this.accountRepository.getAccount(fromId);
@@ -103,6 +100,10 @@ export class TransferService {
       return ctx;
     }
 
+    // Store balances before transaction execution for ledger entries
+    ctx.fromAccountBalanceBefore = fromAccount.getBalance();
+    ctx.toAccountBalanceBefore = toAccount.getBalance();
+    
     // Execute transaction
     try {
       this.eventPublisher.mergeObjectContext(transaction);
@@ -167,6 +168,16 @@ export class TransferService {
 
     // Execute transaction
     const transaction = ctx.getTransaction();
+    
+    if (fromAccount) {
+      // Store balance before transaction execution for ledger entries
+      ctx.fromAccountBalanceBefore = fromAccount.getBalance();
+    }
+    if (toAccount) {
+      // Store balance before transaction execution for ledger entries
+      ctx.toAccountBalanceBefore = toAccount.getBalance();
+    }
+    
     try {
       this.eventPublisher.mergeObjectContext(transaction);
       const success = transaction.execute(fromAccount, toAccount);

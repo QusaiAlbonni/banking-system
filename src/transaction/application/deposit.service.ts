@@ -5,6 +5,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventPublisher } from '@nestjs/cqrs';
 import { PaymentGateway } from '../../payment/application/payment-gateway.interface';
 import { TransactionHandlerChainFactory } from '../domain/transaction-handler-chain.factory';
 import { TransactionStatus, TransactionType } from '../domain/transaction.enums';
@@ -16,7 +17,6 @@ import {
   TransactionDomainException,
   UnauthorizedAccountAccessException,
 } from './transaction.exceptions';
-import { EventPublisher } from '@nestjs/cqrs';
 
 /**
  * Facade service for deposit operations
@@ -94,6 +94,9 @@ export class DepositService {
       return ctx;
     }
 
+    // Store balance before transaction execution for ledger entries
+    ctx.toAccountBalanceBefore = account.getBalance();
+    
     // Execute transaction
     this.publisher.mergeObjectContext(transaction);
     try {
@@ -164,7 +167,13 @@ export class DepositService {
     }
 
     // Execute transaction
-    const transaction = ctx.getTransaction()
+    const transaction = ctx.getTransaction();
+  
+    if (account) {
+      // Store balance before transaction execution for ledger entries
+      ctx.toAccountBalanceBefore = account.getBalance();
+    }
+    
     try {
       const success = transaction.execute(undefined, account);
       if (!success) {

@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { EventPublisher } from '@nestjs/cqrs';
 import { AccountRepository } from '../../account/application/account.repository';
 import { TransactionHandlerChainFactory } from '../domain/transaction-handler-chain.factory';
 import { TransactionStatus, TransactionType } from '../domain/transaction.enums';
@@ -15,7 +16,6 @@ import {
   TransactionDomainException,
   UnauthorizedAccountAccessException,
 } from './transaction.exceptions';
-import { EventPublisher } from '@nestjs/cqrs';
 
 /**
  * Facade service for withdrawal operations
@@ -85,6 +85,9 @@ export class WithdrawService {
       return ctx;
     }
 
+    // Store balance before transaction execution for ledger entries
+    ctx.fromAccountBalanceBefore = account.getBalance();
+    
     this.publisher.mergeObjectContext(transaction);
     // Execute transaction
     try {

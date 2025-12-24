@@ -34,6 +34,20 @@ export abstract class Account implements Withdrawable, Depositable {
 
   protected interestStrategy!: InterestStrategy;
 
+  /**
+   * Gets the withdraw strategy (for use by state classes)
+   */
+   getWithdrawStrategy(): WithdrawStrategy {
+    return this.withdrawStrategy;
+  }
+
+  /**
+   * Gets the deposit strategy (for use by state classes)
+   */
+   getDepositStrategy(): DepositStrategy {
+    return this.depositStrategy;
+  }
+
   abstract getBalance(): number;
 
   /**
@@ -82,6 +96,39 @@ export abstract class Account implements Withdrawable, Depositable {
       throw new Error('Account state is not initialized');
     }
     this.currentState.close(this);
+  }
+
+  /**
+   * Transitions account to SUSPENDED state
+   * Encapsulates state transition logic
+   * @internal - called by state classes only
+   */
+   transitionToSuspended(newState: AccountState): void {
+    this.status = AccountStatus.SUSPENDED;
+    this.currentState = newState;
+    this.updatedAt = new Date();
+  }
+
+  /**
+   * Transitions account to CLOSED state
+   * Encapsulates state transition logic
+   * @internal - called by state classes only
+   */
+   transitionToClosed(newState: AccountState): void {
+    this.status = AccountStatus.CLOSED;
+    this.currentState = newState;
+    this.updatedAt = new Date();
+  }
+
+  /**
+   * Transitions account to ACTIVE state
+   * Encapsulates state transition logic
+   * @internal - called by state classes only
+   */
+   transitionToActive(newState: AccountState): void {
+    this.status = AccountStatus.ACTIVE;
+    this.currentState = newState;
+    this.updatedAt = new Date();
   }
 
   getInterest(amount: number){

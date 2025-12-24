@@ -67,3 +67,12 @@ export class UnauthorizedAccountAccessException extends TransactionDomainExcepti
   }
 }
 
+export class SameAccountTransferException extends TransactionDomainException {
+  constructor(accountId: string) {
+    super(
+      `Cannot transfer to the same account ${accountId}. Source and target accounts must be different.`,
+    );
+    this.name = 'SameAccountTransferException';
+  }
+}
+

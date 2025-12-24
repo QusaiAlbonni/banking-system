@@ -14,6 +14,9 @@ export class TransactionalContext {
   approvalNotes?: string;
   approvedBy?: string;
   approvedAt?: Date;
+  // Balance tracking for ledger entries (stored before transaction execution)
+  fromAccountBalanceBefore?: number;
+  toAccountBalanceBefore?: number;
 
   getTransaction(): Transaction {
     return this.transaction;
