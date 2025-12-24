@@ -12,6 +12,7 @@ import { buildSwaggerDocument } from './swagger';
 import * as nunjucks from 'nunjucks';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import compression = require('compression');
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -31,6 +32,8 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.use(I18nMiddleware);
   app.use(helmet());
+  app.use(compression());
+
   buildSwaggerDocument(app);
   await app.listen(process.env.PORT ?? 3000);
 }
